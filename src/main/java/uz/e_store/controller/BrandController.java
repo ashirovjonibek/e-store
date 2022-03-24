@@ -54,6 +54,7 @@ public class BrandController {
                 brandRequest,
                 brandService.checkBrandName(brandRequest.getBrandName())&&
                         !brandService.checkBrandName(brandRequest.getBrandName(),id)
+
         );
         if (validate.size() == 0) {
             return ResponseEntity.ok(brandService.edit(id, brandRequest));
