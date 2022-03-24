@@ -1,4 +1,4 @@
-package uz.e_store.dtos;
+package uz.e_store.dtos.request;
 
 import lombok.Builder;
 import lombok.Data;

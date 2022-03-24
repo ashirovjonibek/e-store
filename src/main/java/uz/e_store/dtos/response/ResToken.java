@@ -1,4 +1,4 @@
-package uz.e_store.dtos;
+package uz.e_store.dtos.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

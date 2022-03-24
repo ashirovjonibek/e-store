@@ -5,8 +5,8 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import uz.e_store.dtos.ResToken;
-import uz.e_store.dtos.SignIn;
+import uz.e_store.dtos.response.ResToken;
+import uz.e_store.dtos.request.SignIn;
 import uz.e_store.service.AuthService;
 
 @RestController

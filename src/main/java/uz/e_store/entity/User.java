@@ -7,6 +7,7 @@ import uz.e_store.entity.template.AbsEntity;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.ManyToMany;
 import java.util.Collection;
 import java.util.Set;
@@ -31,7 +32,7 @@ public class User extends AbsEntity implements UserDetails {
 
     private String password;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     private Set<Role> roles;
 
     private boolean accountNonBlocked=true;
