@@ -5,10 +5,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import uz.e_store.entity.template.AbsEntity;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.ManyToMany;
+import javax.persistence.*;
 import java.util.Collection;
 import java.util.Set;
 
@@ -34,6 +31,9 @@ public class User extends AbsEntity implements UserDetails {
 
     @ManyToMany(fetch = FetchType.EAGER)
     private Set<Role> roles;
+
+    @OneToOne
+    private Attachment attachment;
 
     private boolean accountNonBlocked=true;
     private boolean accountNonExpired=true;
