@@ -25,11 +25,13 @@ public class DiscountDto extends AbsDtoTemplate {
         discountDto.setId(discount.getId());
         discountDto.setActive(discount.isActive());
         discountDto.setDescription(discount.getDescription());
-        if (expand.contains("createdBy")&&discount.getCreatedBy()!=null) {
-            discountDto.setCreatedBy(CreatedByUpdatedByDto.response(discount.getCreatedBy()));
-        }
-        if (expand.contains("updatedBy")&&discount.getUpdatedBy()!=null) {
-            discountDto.setUpdatedBy(CreatedByUpdatedByDto.response(discount.getUpdatedBy()));
+        if (expand != null) {
+            if (expand.contains("createdBy") && discount.getCreatedBy() != null) {
+                discountDto.setCreatedBy(CreatedByUpdatedByDto.response(discount.getCreatedBy()));
+            }
+            if (expand.contains("updatedBy") && discount.getUpdatedBy() != null) {
+                discountDto.setUpdatedBy(CreatedByUpdatedByDto.response(discount.getUpdatedBy()));
+            }
         }
         return discountDto;
     }

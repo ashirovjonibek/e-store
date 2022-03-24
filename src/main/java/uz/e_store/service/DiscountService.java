@@ -25,12 +25,13 @@ public class DiscountService {
     DiscountRepository discountRepository;
 
     public ApiResponse findAll(int page, int size, String expand, String order) {
-        String[] split = order.split("~");
+        String[] split = order!=null?order.split("~"):new String[0];
         try {
-            Pageable pageable = split.length > 0 ?
+            Pageable pageable = order!=null?split.length > 1 ?
                     CommonUtils.getPageable(page - 1, size, split[0], "DESC".equals(split[1].toUpperCase()) ?
                             Sort.Direction.DESC : Sort.Direction.ASC) :
-                    CommonUtils.getPageable(page, size, order);
+                    CommonUtils.getPageable(page, size, order):
+                    CommonUtils.getPageable(page,size);
             Page<Discount> all = discountRepository.findAllByDeleteFalse(pageable);
             List<DiscountDto> collect = all.stream().map(discount -> DiscountDto.response(discount, expand)).collect(Collectors.toList());
             return new ApiResponseList((short) 1, "All discounts!", new Meta(
@@ -68,7 +69,7 @@ public class DiscountService {
 
     public ApiResponse delete(UUID id) {
         try{
-            Optional<Discount> byId = discountRepository.findById(id);
+            Optional<Discount> byId = discountRepository.findByIdAndDeleteFalse(id);
             if (byId.isPresent()){
                 Discount discount = byId.get();
                 discount.setDelete(true);

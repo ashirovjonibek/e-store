@@ -26,11 +26,13 @@ public class BrandDto extends AbsDtoNameTemplate {
         brandDto.setId(brand.getId());
         brandDto.setActive(brand.isActive());
         brandDto.setDescription(brand.getDescription());
-        if (expand.contains("createdBy")&&brand.getCreatedBy()!=null) {
-            brandDto.setCreatedBy(CreatedByUpdatedByDto.response(brand.getCreatedBy()));
-        }
-        if (expand.contains("updatedBy")&&brand.getUpdatedBy()!=null) {
-            brandDto.setUpdatedBy(CreatedByUpdatedByDto.response(brand.getUpdatedBy()));
+        if (expand != null) {
+            if (expand.contains("createdBy") && brand.getCreatedBy() != null) {
+                brandDto.setCreatedBy(CreatedByUpdatedByDto.response(brand.getCreatedBy()));
+            }
+            if (expand.contains("updatedBy") && brand.getUpdatedBy() != null) {
+                brandDto.setUpdatedBy(CreatedByUpdatedByDto.response(brand.getUpdatedBy()));
+            }
         }
         return brandDto;
     }

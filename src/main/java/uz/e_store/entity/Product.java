@@ -2,12 +2,14 @@ package uz.e_store.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import uz.e_store.entity.template.AbsEntity;
 
 import javax.persistence.*;
 import java.util.List;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -19,6 +21,9 @@ public class Product extends AbsEntity {
 
     @Column(nullable = false)
     private String name;
+
+    @Column(nullable = false)
+    private String shortDescription;
 
     @ManyToOne(fetch = FetchType.EAGER)
     private Brand brand;
