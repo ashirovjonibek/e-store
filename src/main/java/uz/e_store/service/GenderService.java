@@ -90,11 +90,11 @@ public class GenderService {
         }
     }
 
-    public boolean checkBrandName(String name){
+    public boolean checkName(String name){
         return genderRepository.existsByName(name);
     }
 
-    public boolean checkBrandName(String name,Integer id){
+    public boolean checkName(String name,Integer id){
         return genderRepository.existsByNameAndId(name,id);
     }
 }

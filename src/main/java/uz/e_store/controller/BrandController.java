@@ -40,7 +40,7 @@ public class BrandController {
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     @PostMapping
     public HttpEntity<?> saveBrand(@RequestBody BrandRequest brandRequest) {
-        Map<String, Object> validate = BrandValidator.validate(brandRequest,brandService.checkBrandName(brandRequest.getBrandName()));
+        Map<String, Object> validate = BrandValidator.validate(brandRequest,brandService.checkName(brandRequest.getBrandName()));
         if (validate.size() == 0) {
             return ResponseEntity.ok(brandService.save(BrandRequest.request(brandRequest)));
         } else {
@@ -50,11 +50,11 @@ public class BrandController {
 
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     @PutMapping("/{id}")
-    public HttpEntity<?> editDiscount(@PathVariable Integer id, @RequestBody BrandRequest brandRequest) {
+    public HttpEntity<?> editBrand(@PathVariable Integer id, @RequestBody BrandRequest brandRequest) {
         Map<String, Object> validate = BrandValidator.validate(
                 brandRequest,
-                brandService.checkBrandName(brandRequest.getBrandName())&&
-                        !brandService.checkBrandName(brandRequest.getBrandName(),id)
+                brandService.checkName(brandRequest.getBrandName())&&
+                        !brandService.checkName(brandRequest.getBrandName(),id)
 
         );
         if (validate.size() == 0) {
@@ -66,7 +66,7 @@ public class BrandController {
 
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     @DeleteMapping
-    public HttpEntity<?> deleteDiscount(@RequestParam Integer id) {
+    public HttpEntity<?> deleteBrand(@RequestParam Integer id) {
             return ResponseEntity.ok(brandService.delete(id));
     }
 }

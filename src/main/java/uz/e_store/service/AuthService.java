@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import uz.e_store.dtos.response.ResToken;
 import uz.e_store.dtos.request.SignIn;
 import uz.e_store.entity.User;
+import uz.e_store.payload.TokenPayload;
 import uz.e_store.repository.UserRepository;
 import uz.e_store.secret.JwtTokenProvider;
 
@@ -44,8 +45,8 @@ public class AuthService implements UserDetailsService {
             );
             SecurityContextHolder.getContext().setAuthentication(authentication);
             User principal = (User) authentication.getPrincipal();
-            String jwt = jwtTokenProvider.generateToken(principal);
-            return new ResToken(jwt);
+            TokenPayload jwt = jwtTokenProvider.generateToken(principal);
+            return new ResToken(jwt.getToken(),jwt.getExpireDate());
         }catch (Exception e){
             e.printStackTrace();
             return null;

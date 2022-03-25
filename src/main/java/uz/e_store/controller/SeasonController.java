@@ -6,41 +6,41 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import uz.e_store.dtos.request.BrandRequest;
-import uz.e_store.dtos.request.GenderRequest;
+import uz.e_store.dtos.request.CategoryRequest;
+import uz.e_store.dtos.request.SeasonRequest;
 import uz.e_store.payload.ErrorResponse;
-import uz.e_store.service.BrandService;
-import uz.e_store.service.GenderService;
-import uz.e_store.validators.BrandValidator;
-import uz.e_store.validators.GenderValidator;
+import uz.e_store.service.CategoryService;
+import uz.e_store.service.SeasonService;
+import uz.e_store.validators.CategoryValidator;
+import uz.e_store.validators.SeasonValidator;
 
 import java.util.Map;
 
 @RestController
 @CrossOrigin("*")
-@RequestMapping("/api/gender")
-public class GenderController {
+@RequestMapping("/api/season")
+public class SeasonController {
 
     @Autowired
-    GenderService genderService;
+    SeasonService seasonService;
 
     //    @PreAuthorize("hasAnyAuthority('ROLE_USER','ROLE_ADMIN')")
     @GetMapping
-    public HttpEntity<?> getAllGender(
+    public HttpEntity<?> getAllSeason(
             @RequestParam(defaultValue = "", required = false) String expand,
             @RequestParam(required = false) String order,
             @RequestParam(required = false,defaultValue = "1") int page,
             @RequestParam(required = false,defaultValue = "20") int size
     ) {
-        return ResponseEntity.ok(genderService.findAll(page,size,expand,order));
+        return ResponseEntity.ok(seasonService.findAll(page,size,expand,order));
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     @PostMapping
-    public HttpEntity<?> saveGender(@RequestBody GenderRequest genderRequest) {
-        Map<String, Object> validate = GenderValidator.validate(genderRequest,genderService.checkName(genderRequest.getName()));
+    public HttpEntity<?> saveSeason(@RequestBody SeasonRequest seasonRequest) {
+        Map<String, Object> validate = SeasonValidator.validate(seasonRequest,seasonService.checkName(seasonRequest.getName()));
         if (validate.size() == 0) {
-            return ResponseEntity.ok(genderService.save(GenderRequest.request(genderRequest)));
+            return ResponseEntity.ok(seasonService.save(SeasonRequest.request(seasonRequest)));
         } else {
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(new ErrorResponse(0, "Validator errors!", validate));
         }
@@ -48,15 +48,15 @@ public class GenderController {
 
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     @PutMapping("/{id}")
-    public HttpEntity<?> editGender(@PathVariable Integer id, @RequestBody GenderRequest genderRequest) {
-        Map<String, Object> validate = GenderValidator.validate(
-                genderRequest,
-                genderService.checkName(genderRequest.getName())&&
-                        !genderService.checkName(genderRequest.getName(),id)
+    public HttpEntity<?> editSeason(@PathVariable Integer id, @RequestBody SeasonRequest seasonRequest) {
+        Map<String, Object> validate = SeasonValidator.validate(
+                seasonRequest,
+                seasonService.checkName(seasonRequest.getName())&&
+                        !seasonService.checkName(seasonRequest.getName(),id)
 
         );
         if (validate.size() == 0) {
-            return ResponseEntity.ok(genderService.edit(id, genderRequest));
+            return ResponseEntity.ok(seasonService.edit(id, seasonRequest));
         } else {
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(new ErrorResponse(0, "Validator errors!", validate));
         }
@@ -64,7 +64,7 @@ public class GenderController {
 
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     @DeleteMapping
-    public HttpEntity<?> deleteGender(@RequestParam Integer id) {
-            return ResponseEntity.ok(genderService.delete(id));
+    public HttpEntity<?> deleteSeason(@RequestParam Integer id) {
+            return ResponseEntity.ok(seasonService.delete(id));
     }
 }

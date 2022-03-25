@@ -1,33 +1,31 @@
 package uz.e_store.service;
 
-import io.swagger.models.auth.In;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import uz.e_store.dtos.request.BrandRequest;
-import uz.e_store.dtos.request.DiscountRequest;
-import uz.e_store.dtos.response.BrandDto;
-import uz.e_store.dtos.response.DiscountDto;
+import uz.e_store.dtos.request.SeasonRequest;
+import uz.e_store.dtos.request.SizeRequest;
 import uz.e_store.dtos.response.Meta;
-import uz.e_store.entity.Brand;
-import uz.e_store.entity.Discount;
+import uz.e_store.dtos.response.SeasonDto;
+import uz.e_store.dtos.response.SizeDto;
+import uz.e_store.entity.Season;
+import uz.e_store.entity.Size;
 import uz.e_store.payload.ApiResponse;
 import uz.e_store.payload.ApiResponseList;
-import uz.e_store.repository.BrandRepository;
-import uz.e_store.repository.DiscountRepository;
+import uz.e_store.repository.SeasonRepository;
+import uz.e_store.repository.SizeRepository;
 import uz.e_store.utils.CommonUtils;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
-public class BrandService {
+public class SizeService {
     @Autowired
-    BrandRepository brandRepository;
+    SizeRepository sizeRepository;
 
     public ApiResponse findAll(int page, int size, String expand, String order) {
         String[] split = order!=null?order.split("~"):new String[0];
@@ -37,11 +35,11 @@ public class BrandService {
                             Sort.Direction.DESC : Sort.Direction.ASC) :
                     CommonUtils.getPageable(page-1, size, order):
                     CommonUtils.getPageable(page-1,size);
-            Page<Brand> all = brandRepository.findAllByDeleteFalse(pageable);
-            List<BrandDto> collect = all.stream().map(brand -> BrandDto.response(brand, expand)).collect(Collectors.toList());
+            Page<Size> all = sizeRepository.findAllByDeleteFalse(pageable);
+            List<SizeDto> collect = all.stream().map(size1 -> SizeDto.response(size1, expand)).collect(Collectors.toList());
             return new ApiResponseList(
                     1,
-                    "All brands!",
+                    "All sizes!",
                     new Meta(
                             all.getTotalPages(),
                             all.getSize(),
@@ -51,52 +49,52 @@ public class BrandService {
                     collect);
         } catch (Exception e) {
             e.printStackTrace();
-            return new ApiResponse((short) 0, "Error read brands!", null);
+            return new ApiResponse((short) 0, "Error read sizes!", null);
         }
     }
 
-    public ApiResponse save(Brand brand) {
+    public ApiResponse save(Size size) {
         try {
-            brandRepository.save(brand);
-            return new ApiResponse((short) 1, "Successfully saved brand!", null);
+            sizeRepository.save(size);
+            return new ApiResponse((short) 1, "Successfully saved size!", null);
         } catch (Exception e) {
-            return new ApiResponse((short) 0, "Error saved brand try again!", null);
+            return new ApiResponse((short) 0, "Error saved size try again!", null);
         }
     }
 
-    public ApiResponse edit(Integer id,  BrandRequest brandRequest) {
-        Brand brand = BrandRequest.request(brandRequest);
-        brand.setId(id);
+    public ApiResponse edit(Integer id,  SizeRequest sizeRequest) {
+        Size size = SizeRequest.request(sizeRequest);
+        size.setId(id);
         try {
-            brandRepository.save(brand);
-            return new ApiResponse((short) 1, "Brand successfully updated!", null);
+            sizeRepository.save(size);
+            return new ApiResponse((short) 1, "Size successfully updated!", null);
         } catch (Exception e) {
             e.printStackTrace();
-            return new ApiResponse((short) 0, "Error update brand", null);
+            return new ApiResponse((short) 0, "Error update size", null);
         }
     }
 
     public ApiResponse delete(Integer id) {
         try {
-            Optional<Brand> byId = brandRepository.findByIdAndDeleteFalse(id);
+            Optional<Size> byId = sizeRepository.findByIdAndDeleteFalse(id);
             if (byId.isPresent()) {
-                Brand brand = byId.get();
-                brand.setDelete(true);
-                brandRepository.save(brand);
-                return new ApiResponse(1, "Brand deleted successfully!", null);
+                Size size = byId.get();
+                size.setDelete(true);
+                sizeRepository.save(size);
+                return new ApiResponse(1, "Size deleted successfully!", null);
             } else {
-                return new ApiResponse(0, "Brand not fount!", null);
+                return new ApiResponse(0, "Size not fount!", null);
             }
         } catch (Exception e) {
-            return new ApiResponse(0, "Error delete brand!", null);
+            return new ApiResponse(0, "Error delete Size!", null);
         }
     }
 
     public boolean checkName(String name){
-        return brandRepository.existsByBrandName(name);
+        return sizeRepository.existsByName(name);
     }
 
     public boolean checkName(String name,Integer id){
-        return brandRepository.existsByBrandNameAndId(name,id);
+        return sizeRepository.existsByNameAndId(name,id);
     }
 }

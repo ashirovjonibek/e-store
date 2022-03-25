@@ -35,4 +35,15 @@ public class GenderDto extends AbsDtoNameTemplate {
         return brandDto;
     }
 
+    public static GenderDto response(Gender gender) {
+        GenderDto brandDto = new GenderDto();
+        brandDto.setName(gender.getName());
+        brandDto.setCreatedAt(gender.getCreatedAt());
+        brandDto.setUpdatedAt(gender.getUpdatedAt());
+        brandDto.setId(gender.getId());
+        brandDto.setActive(gender.isActive());
+        brandDto.setDescription(gender.getDescription());
+        return brandDto;
+    }
+
 }
