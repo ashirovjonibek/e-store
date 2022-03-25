@@ -32,20 +32,23 @@ public class CategoryController {
     public HttpEntity<?> getAllCategory(
             @RequestParam(defaultValue = "", required = false) String expand,
             @RequestParam(required = false) String order,
-            @RequestParam(required = false,defaultValue = "1") int page,
-            @RequestParam(required = false,defaultValue = "20") int size,
+            @RequestParam(required = false, defaultValue = "1") int page,
+            @RequestParam(required = false, defaultValue = "20") int size,
             @RequestParam(required = false) Integer genderId,
             @RequestParam(required = false) Integer seasonId,
             @RequestParam(required = false) String search
     ) {
-
-        return ResponseEntity.ok(categoryService.findAll(page,size,expand,order,new CategoryFilter(seasonId,genderId,search)));
+        CategoryFilter categoryFilter = null;
+        if (genderId!=null||search!=null||seasonId!=null) {
+            categoryFilter = new CategoryFilter(seasonId, genderId, search);
+        }
+        return ResponseEntity.ok(categoryService.findAll(page, size, expand, order, categoryFilter));
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     @PostMapping
     public HttpEntity<?> saveCategory(@RequestBody CategoryRequest categoryRequest) {
-        Map<String, Object> validate = CategoryValidator.validate(categoryRequest,categoryService.checkName(categoryRequest.getName()));
+        Map<String, Object> validate = CategoryValidator.validate(categoryRequest, categoryService.checkName(categoryRequest.getName()));
         if (validate.size() == 0) {
             return ResponseEntity.ok(categoryService.save(CategoryRequest.request(categoryRequest)));
         } else {
@@ -58,8 +61,8 @@ public class CategoryController {
     public HttpEntity<?> editCategory(@PathVariable Integer id, @RequestBody CategoryRequest categoryRequest) {
         Map<String, Object> validate = CategoryValidator.validate(
                 categoryRequest,
-                categoryService.checkName(categoryRequest.getName())&&
-                        !categoryService.checkName(categoryRequest.getName(),id)
+                categoryService.checkName(categoryRequest.getName()) &&
+                        !categoryService.checkName(categoryRequest.getName(), id)
 
         );
         if (validate.size() == 0) {
@@ -72,6 +75,6 @@ public class CategoryController {
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     @DeleteMapping
     public HttpEntity<?> deleteCategory(@RequestParam Integer id) {
-            return ResponseEntity.ok(categoryService.delete(id));
+        return ResponseEntity.ok(categoryService.delete(id));
     }
 }
