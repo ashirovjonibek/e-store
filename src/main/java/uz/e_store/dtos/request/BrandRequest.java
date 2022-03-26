@@ -30,5 +30,4 @@ public class BrandRequest {
         brand.setDescription(brandRequest.getDescription());
         return brand;
     }
-
 }
