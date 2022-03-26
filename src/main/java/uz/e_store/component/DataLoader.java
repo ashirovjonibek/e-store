@@ -18,7 +18,6 @@ public class DataLoader implements CommandLineRunner {
     @Value("${spring.sql.init.mode}")
     String mode;
 
-
     @Autowired
     UserRepository userRepository;
 
