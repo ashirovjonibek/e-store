@@ -5,9 +5,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import uz.e_store.dtos.response.BrandDto;
 import uz.e_store.dtos.response.DiscountDto;
 import uz.e_store.dtos.request.DiscountRequest;
 import uz.e_store.dtos.response.Meta;
+import uz.e_store.entity.Brand;
 import uz.e_store.entity.Discount;
 import uz.e_store.payload.ApiResponse;
 import uz.e_store.payload.ApiResponseList;
@@ -43,6 +45,16 @@ public class DiscountService {
         } catch (Exception e) {
             e.printStackTrace();
             return new ApiResponse((short) 0, "Error read discounts!", null);
+        }
+    }
+
+    public ApiResponse findById(UUID id, String expand) {
+        try{
+            Optional<Discount> byId = discountRepository.findByIdAndDeleteFalse(id);
+            return byId.map(discount -> new ApiResponse(1, "Discount with id", DiscountDto.response(discount,expand))).orElseGet(() -> new ApiResponse(0, "Discount not found with id", null));
+        }catch (Exception e){
+            e.printStackTrace();
+            return new ApiResponse(0,"Error get discount with id",null);
         }
     }
 

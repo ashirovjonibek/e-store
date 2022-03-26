@@ -35,6 +35,14 @@ public class GenderController {
         return ResponseEntity.ok(genderService.findAll(page,size,expand,order));
     }
 
+    @GetMapping("/{id}")
+    public HttpEntity<?> getOneGender(
+            @PathVariable Integer id,
+            @RequestParam(defaultValue = "", required = false) String expand
+    ) {
+        return ResponseEntity.ok(genderService.findById(id,expand));
+    }
+
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     @PostMapping
     public HttpEntity<?> saveGender(@RequestBody GenderRequest genderRequest) {

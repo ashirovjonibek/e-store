@@ -7,9 +7,11 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import uz.e_store.dtos.request.CategoryRequest;
 import uz.e_store.dtos.request.SeasonRequest;
+import uz.e_store.dtos.response.BrandDto;
 import uz.e_store.dtos.response.CategoryDto;
 import uz.e_store.dtos.response.Meta;
 import uz.e_store.dtos.response.SeasonDto;
+import uz.e_store.entity.Brand;
 import uz.e_store.entity.Category;
 import uz.e_store.entity.Season;
 import uz.e_store.payload.ApiResponse;
@@ -50,6 +52,16 @@ public class SeasonService {
         } catch (Exception e) {
             e.printStackTrace();
             return new ApiResponse((short) 0, "Error read seasons!", null);
+        }
+    }
+
+    public ApiResponse findById(Integer id, String expand) {
+        try{
+            Optional<Season> byId = seasonRepository.findByIdAndDeleteFalse(id);
+            return byId.map(season -> new ApiResponse(1, "Season with id", SeasonDto.response(season,expand))).orElseGet(() -> new ApiResponse(0, "Season not found with id", null));
+        }catch (Exception e){
+            e.printStackTrace();
+            return new ApiResponse(0,"Error get season with id",null);
         }
     }
 

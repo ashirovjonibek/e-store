@@ -64,6 +64,16 @@ public class CategoryService {
         }
     }
 
+    public ApiResponse findById(Integer id, String expand) {
+        try {
+            Optional<Category> byId = categoryRepository.findByIdAndDeleteFalse(id);
+            return byId.map(category -> new ApiResponse(1, "Category with id", CategoryDto.response(category, expand))).orElseGet(() -> new ApiResponse(0, "Category not found with id", null));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ApiResponse(0, "Error get category with id", null);
+        }
+    }
+
     public ApiResponse save(Category category) {
         category = findGender(category);
         category = findSeason(category);
@@ -131,20 +141,20 @@ public class CategoryService {
 
     private Page<Category> filter(CategoryFilter filter, Pageable pageable) {
         Page<Category> filter1 = null;
-        if (filter.getGenderId()!=null&&filter.getSeasonId()!=null&&filter.getSearch()!=null){
-            filter1=categoryRepository.findAllByGenderIdAndSeasonIdAndNameContainingIgnoreCaseAndDeleteFalse(filter.getGenderId(),filter.getSeasonId(),filter.getSearch(),pageable);
-        }else if (filter.getGenderId()!=null&&filter.getSeasonId()!=null&&filter.getSearch()==null) {
-            filter1=categoryRepository.findAllByGenderIdAndSeasonIdAndDeleteFalse(filter.getGenderId(),filter.getSeasonId(),pageable);
-        }else if (filter.getGenderId()!=null&&filter.getSeasonId()==null&&filter.getSearch()!=null) {
-            filter1=categoryRepository.findAllByGenderIdAndNameContainingIgnoreCaseAndDeleteFalse(filter.getGenderId(),filter.getSearch(),pageable);
-        }else if (filter.getGenderId()==null&&filter.getSeasonId()!=null&&filter.getSearch()!=null) {
-            filter1=categoryRepository.findAllBySeasonIdAndNameContainingIgnoreCaseAndDeleteFalse(filter.getSeasonId(),filter.getSearch(),pageable);
-        }else if (filter.getGenderId()!=null&&filter.getSeasonId()==null&&filter.getSearch()==null) {
-            filter1=categoryRepository.findAllByGenderIdAndDeleteFalse(filter.getGenderId(),pageable);
-        }else if (filter.getGenderId()==null&&filter.getSeasonId()!=null&&filter.getSearch()==null) {
-            filter1=categoryRepository.findAllBySeasonIdAndDeleteFalse(filter.getSeasonId(),pageable);
-        }else if (filter.getGenderId()==null&&filter.getSeasonId()==null&&filter.getSearch()!=null) {
-            filter1=categoryRepository.findAllByNameContainingIgnoreCaseAndDeleteFalse(filter.getSearch(),pageable);
+        if (filter.getGenderId() != null && filter.getSeasonId() != null && filter.getSearch() != null) {
+            filter1 = categoryRepository.findAllByGenderIdAndSeasonIdAndNameContainingIgnoreCaseAndDeleteFalse(filter.getGenderId(), filter.getSeasonId(), filter.getSearch(), pageable);
+        } else if (filter.getGenderId() != null && filter.getSeasonId() != null && filter.getSearch() == null) {
+            filter1 = categoryRepository.findAllByGenderIdAndSeasonIdAndDeleteFalse(filter.getGenderId(), filter.getSeasonId(), pageable);
+        } else if (filter.getGenderId() != null && filter.getSeasonId() == null && filter.getSearch() != null) {
+            filter1 = categoryRepository.findAllByGenderIdAndNameContainingIgnoreCaseAndDeleteFalse(filter.getGenderId(), filter.getSearch(), pageable);
+        } else if (filter.getGenderId() == null && filter.getSeasonId() != null && filter.getSearch() != null) {
+            filter1 = categoryRepository.findAllBySeasonIdAndNameContainingIgnoreCaseAndDeleteFalse(filter.getSeasonId(), filter.getSearch(), pageable);
+        } else if (filter.getGenderId() != null && filter.getSeasonId() == null && filter.getSearch() == null) {
+            filter1 = categoryRepository.findAllByGenderIdAndDeleteFalse(filter.getGenderId(), pageable);
+        } else if (filter.getGenderId() == null && filter.getSeasonId() != null && filter.getSearch() == null) {
+            filter1 = categoryRepository.findAllBySeasonIdAndDeleteFalse(filter.getSeasonId(), pageable);
+        } else if (filter.getGenderId() == null && filter.getSeasonId() == null && filter.getSearch() != null) {
+            filter1 = categoryRepository.findAllByNameContainingIgnoreCaseAndDeleteFalse(filter.getSearch(), pageable);
         }
         return filter1;
     }

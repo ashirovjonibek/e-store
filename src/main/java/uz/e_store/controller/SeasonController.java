@@ -35,6 +35,14 @@ public class SeasonController {
         return ResponseEntity.ok(seasonService.findAll(page,size,expand,order));
     }
 
+    @GetMapping("/{id}")
+    public HttpEntity<?> getOneSeason(
+            @PathVariable Integer id,
+            @RequestParam(defaultValue = "", required = false) String expand
+    ) {
+        return ResponseEntity.ok(seasonService.findById(id,expand));
+    }
+
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     @PostMapping
     public HttpEntity<?> saveSeason(@RequestBody SeasonRequest seasonRequest) {

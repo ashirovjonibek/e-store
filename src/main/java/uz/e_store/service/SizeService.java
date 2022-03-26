@@ -7,9 +7,11 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import uz.e_store.dtos.request.SeasonRequest;
 import uz.e_store.dtos.request.SizeRequest;
+import uz.e_store.dtos.response.BrandDto;
 import uz.e_store.dtos.response.Meta;
 import uz.e_store.dtos.response.SeasonDto;
 import uz.e_store.dtos.response.SizeDto;
+import uz.e_store.entity.Brand;
 import uz.e_store.entity.Season;
 import uz.e_store.entity.Size;
 import uz.e_store.payload.ApiResponse;
@@ -50,6 +52,18 @@ public class SizeService {
         } catch (Exception e) {
             e.printStackTrace();
             return new ApiResponse((short) 0, "Error read sizes!", null);
+        }
+    }
+
+    public ApiResponse findById(Integer id, String expand) {
+        try{
+            Optional<Size> byId = sizeRepository.findByIdAndDeleteFalse(id);
+            return byId
+                    .map(size -> new ApiResponse(1, "Size with id", SizeDto.response(size,expand)))
+                    .orElseGet(() -> new ApiResponse(0, "Size not found with id", null));
+        }catch (Exception e){
+            e.printStackTrace();
+            return new ApiResponse(0,"Error get size with id",null);
         }
     }
 

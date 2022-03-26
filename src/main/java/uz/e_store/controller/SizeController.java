@@ -35,6 +35,14 @@ public class SizeController {
         return ResponseEntity.ok(sizeService.findAll(page,size,expand,order));
     }
 
+    @GetMapping("/{id}")
+    public HttpEntity<?> getOneSize(
+            @PathVariable Integer id,
+            @RequestParam(defaultValue = "", required = false) String expand
+    ) {
+        return ResponseEntity.ok(sizeService.findById(id,expand));
+    }
+
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     @PostMapping
     public HttpEntity<?> saveSize(@RequestBody SizeRequest sizeRequest) {

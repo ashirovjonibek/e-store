@@ -55,6 +55,16 @@ public class BrandService {
         }
     }
 
+    public ApiResponse findById(Integer id, String expand) {
+        try{
+            Optional<Brand> byId = brandRepository.findByIdAndDeleteFalse(id);
+            return byId.map(brand -> new ApiResponse(1, "Brand with id", BrandDto.response(brand,expand))).orElseGet(() -> new ApiResponse(0, "Brand not found with id", null));
+        }catch (Exception e){
+            e.printStackTrace();
+            return new ApiResponse(0,"Error get brand with id",null);
+        }
+    }
+
     public ApiResponse save(Brand brand) {
         try {
             brandRepository.save(brand);
@@ -99,4 +109,6 @@ public class BrandService {
     public boolean checkName(String name,Integer id){
         return brandRepository.existsByBrandNameAndId(name,id);
     }
+
+
 }

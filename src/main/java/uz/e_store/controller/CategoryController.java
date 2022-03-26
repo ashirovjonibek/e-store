@@ -45,6 +45,14 @@ public class CategoryController {
         return ResponseEntity.ok(categoryService.findAll(page, size, expand, order, categoryFilter));
     }
 
+    @GetMapping("/{id}")
+    public HttpEntity<?> getOneCategory(
+            @PathVariable Integer id,
+            @RequestParam(defaultValue = "", required = false) String expand
+    ) {
+        return ResponseEntity.ok(categoryService.findById(id,expand));
+    }
+
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     @PostMapping
     public HttpEntity<?> saveCategory(@RequestBody CategoryRequest categoryRequest) {

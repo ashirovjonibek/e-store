@@ -37,6 +37,14 @@ public class DiscountController {
         return ResponseEntity.ok(discountService.findAll(page,size,expand,order));
     }
 
+    @GetMapping("/{id}")
+    public HttpEntity<?> getOneDiscount(
+            @PathVariable String id,
+            @RequestParam(defaultValue = "", required = false) String expand
+    ) {
+        return ResponseEntity.ok(discountService.findById(UUID.fromString(id),expand));
+    }
+
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     @PostMapping
     public HttpEntity<?> saveDiscount(@RequestBody DiscountRequest discountRequest) {

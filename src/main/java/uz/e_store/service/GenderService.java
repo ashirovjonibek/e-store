@@ -53,6 +53,16 @@ public class GenderService {
         }
     }
 
+    public ApiResponse findById(Integer id, String expand) {
+        try{
+            Optional<Gender> byId = genderRepository.findByIdAndDeleteFalse(id);
+            return byId.map(gender -> new ApiResponse(1, "Gender with id", GenderDto.response(gender,expand))).orElseGet(() -> new ApiResponse(0, "Gender not found with id", null));
+        }catch (Exception e){
+            e.printStackTrace();
+            return new ApiResponse(0,"Error get Gender with id",null);
+        }
+    }
+
     public ApiResponse save(Gender gender) {
         try {
             genderRepository.save(gender);

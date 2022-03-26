@@ -37,6 +37,14 @@ public class BrandController {
         return ResponseEntity.ok(brandService.findAll(page,size,expand,order));
     }
 
+    @GetMapping("/{id}")
+    public HttpEntity<?> getOneBrand(
+            @PathVariable Integer id,
+            @RequestParam(defaultValue = "", required = false) String expand
+    ) {
+        return ResponseEntity.ok(brandService.findById(id,expand));
+    }
+
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     @PostMapping
     public HttpEntity<?> saveBrand(@RequestBody BrandRequest brandRequest) {
