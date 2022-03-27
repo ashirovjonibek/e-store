@@ -84,7 +84,8 @@ public class CategoryService {
     public ApiResponse findById(Integer id, String expand) {
         try {
             Optional<Category> byId = categoryRepository.findByIdAndDeleteFalse(id);
-            return byId.map(category -> new ApiResponse(1, "Category with id", CategoryDto.response(category, expand))).orElseGet(() -> new ApiResponse(0, "Category not found with id", null));
+            return byId.map(category -> new ApiResponse(1, "Category with id",
+                    expand.contains("children")?CategoryDto.response(category,expand,categoryRepository.findAllByParentIdAndDeleteFalse(category.getId())):CategoryDto.response(category, expand))).orElseGet(() -> new ApiResponse(0, "Category not found with id", null));
         } catch (Exception e) {
             e.printStackTrace();
             return new ApiResponse(0, "Error get category with id", null);

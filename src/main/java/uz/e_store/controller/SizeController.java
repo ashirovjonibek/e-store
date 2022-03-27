@@ -30,9 +30,11 @@ public class SizeController {
             @RequestParam(defaultValue = "", required = false) String expand,
             @RequestParam(required = false) String order,
             @RequestParam(required = false,defaultValue = "1") int page,
-            @RequestParam(required = false,defaultValue = "20") int size
+            @RequestParam(required = false,defaultValue = "20") int size,
+            @RequestParam(required = false) Integer categoryId,
+            @RequestParam(required = false) String search
     ) {
-        return ResponseEntity.ok(sizeService.findAll(page,size,expand,order));
+        return ResponseEntity.ok(sizeService.findAll(page,size,expand,order,categoryId,search));
     }
 
     @GetMapping("/{id}")

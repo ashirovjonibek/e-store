@@ -15,6 +15,8 @@ public class SizeDto extends AbsDtoNameTemplate {
 
     private String name;
 
+    private CategoryDto category;
+
     public static SizeDto response(Size size, String expand) {
         SizeDto sizeDto = new SizeDto();
         sizeDto.setName(size.getName());
@@ -29,6 +31,9 @@ public class SizeDto extends AbsDtoNameTemplate {
             }
             if (expand.contains("updatedBy") && size.getUpdatedBy() != null) {
                 sizeDto.setUpdatedBy(CreatedByUpdatedByDto.response(size.getUpdatedBy()));
+            }
+            if (expand.contains("category") && size.getCategory() != null) {
+                sizeDto.setCategory(CategoryDto.response(size.getCategory(),null));
             }
         }
         return sizeDto;
