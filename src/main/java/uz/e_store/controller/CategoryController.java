@@ -36,11 +36,13 @@ public class CategoryController {
             @RequestParam(required = false, defaultValue = "20") int size,
             @RequestParam(required = false) Integer genderId,
             @RequestParam(required = false) Integer seasonId,
-            @RequestParam(required = false) String search
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) Integer parentId
+
     ) {
         CategoryFilter categoryFilter = null;
-        if (genderId!=null||search!=null||seasonId!=null) {
-            categoryFilter = new CategoryFilter(seasonId, genderId, search);
+        if (genderId!=null||search!=null||seasonId!=null||parentId!=null) {
+            categoryFilter = new CategoryFilter(seasonId, genderId, search,parentId);
         }
         return ResponseEntity.ok(categoryService.findAll(page, size, expand, order, categoryFilter));
     }

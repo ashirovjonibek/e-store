@@ -20,4 +20,7 @@ public class Category extends AbsNameEntity {
 
     @ManyToOne(fetch = FetchType.EAGER)
     private Season season;
+
+    @ManyToOne
+    private Category parent;
 }

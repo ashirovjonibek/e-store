@@ -13,4 +13,6 @@ public class CategoryFilter {
     private Integer genderId;
 
     private String search;
+
+    private Integer parentId;
 }

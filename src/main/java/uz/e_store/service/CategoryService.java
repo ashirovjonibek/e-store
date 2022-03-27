@@ -38,7 +38,13 @@ public class CategoryService {
     @Autowired
     SeasonRepository seasonRepository;
 
-    public ApiResponse findAll(int page, int size, String expand, String order, CategoryFilter filter) {
+    public ApiResponse findAll(
+            int page,
+            int size,
+            String expand,
+            String order,
+            CategoryFilter filter
+    ) {
         String[] split = order != null ? order.split("~") : new String[0];
         try {
             Pageable pageable = order != null ? split.length > 1 ?
@@ -46,8 +52,19 @@ public class CategoryService {
                             Sort.Direction.DESC : Sort.Direction.ASC) :
                     CommonUtils.getPageable(page - 1, size, order) :
                     CommonUtils.getPageable(page - 1, size);
+            if (expand.contains("children")){
+                if(filter==null){
+                    filter=new CategoryFilter();
+                    filter.setParentId(0);
+                }else {
+                    filter.setParentId(0);
+                }
+            }
             Page<Category> all = filter == null ? categoryRepository.findAllByDeleteFalse(pageable) : filter(filter, pageable);
-            List<CategoryDto> collect = all.stream().map(category -> CategoryDto.response(category, expand)).collect(Collectors.toList());
+            List<CategoryDto> collect = all.stream().map(category -> expand.contains("children")
+                    ?CategoryDto.response(category, expand,categoryRepository.findAllByParentIdAndDeleteFalse(category.getId()))
+                    :CategoryDto.response(category,expand)
+                    ).collect(Collectors.toList());
             return new ApiResponseList(
                     1,
                     "All categories!",
@@ -75,8 +92,7 @@ public class CategoryService {
     }
 
     public ApiResponse save(Category category) {
-        category = findGender(category);
-        category = findSeason(category);
+        category = findRef(category);
         try {
             categoryRepository.save(category);
             return new ApiResponse((short) 1, "Successfully saved category!", null);
@@ -88,8 +104,7 @@ public class CategoryService {
     public ApiResponse edit(Integer id, CategoryRequest categoryRequest) {
         Category category = CategoryRequest.request(categoryRequest);
         category.setId(id);
-        category = findGender(category);
-        category = findSeason(category);
+        category = findRef(category);
         try {
             categoryRepository.save(category);
             return new ApiResponse((short) 1, "Category successfully updated!", null);
@@ -123,38 +138,89 @@ public class CategoryService {
         return categoryRepository.existsByNameAndId(name, id);
     }
 
-    private Category findGender(Category category) {
+    private Category findRef(Category category) {
         if (category.getGender() != null) {
             Optional<Gender> gender = genderRepository.findByIdAndDeleteFalse(category.getGender().getId());
             gender.ifPresent(category::setGender);
         }
-        return category;
-    }
-
-    private Category findSeason(Category category) {
         if (category.getSeason() != null) {
             Optional<Season> season = seasonRepository.findByIdAndDeleteFalse(category.getSeason().getId());
             season.ifPresent(category::setSeason);
+        }
+        if (category.getParent() != null) {
+            Optional<Category> category1 = categoryRepository.findByIdAndDeleteFalse(category.getParent().getId());
+            category1.ifPresent(category::setParent);
         }
         return category;
     }
 
     private Page<Category> filter(CategoryFilter filter, Pageable pageable) {
         Page<Category> filter1 = null;
-        if (filter.getGenderId() != null && filter.getSeasonId() != null && filter.getSearch() != null) {
+        if (filter.getGenderId() != null && filter.getSeasonId() != null && filter.getSearch() != null && filter.getParentId() == null) {
             filter1 = categoryRepository.findAllByGenderIdAndSeasonIdAndNameContainingIgnoreCaseAndDeleteFalse(filter.getGenderId(), filter.getSeasonId(), filter.getSearch(), pageable);
-        } else if (filter.getGenderId() != null && filter.getSeasonId() != null && filter.getSearch() == null) {
+        } else if (filter.getGenderId() != null && filter.getSeasonId() != null && filter.getSearch() == null && filter.getParentId() == null) {
             filter1 = categoryRepository.findAllByGenderIdAndSeasonIdAndDeleteFalse(filter.getGenderId(), filter.getSeasonId(), pageable);
-        } else if (filter.getGenderId() != null && filter.getSeasonId() == null && filter.getSearch() != null) {
+        } else if (filter.getGenderId() != null && filter.getSeasonId() == null && filter.getSearch() != null && filter.getParentId() == null) {
             filter1 = categoryRepository.findAllByGenderIdAndNameContainingIgnoreCaseAndDeleteFalse(filter.getGenderId(), filter.getSearch(), pageable);
-        } else if (filter.getGenderId() == null && filter.getSeasonId() != null && filter.getSearch() != null) {
+        } else if (filter.getGenderId() == null && filter.getSeasonId() != null && filter.getSearch() != null && filter.getParentId() == null) {
             filter1 = categoryRepository.findAllBySeasonIdAndNameContainingIgnoreCaseAndDeleteFalse(filter.getSeasonId(), filter.getSearch(), pageable);
-        } else if (filter.getGenderId() != null && filter.getSeasonId() == null && filter.getSearch() == null) {
+        } else if (filter.getGenderId() != null && filter.getSeasonId() == null && filter.getSearch() == null && filter.getParentId() == null) {
             filter1 = categoryRepository.findAllByGenderIdAndDeleteFalse(filter.getGenderId(), pageable);
-        } else if (filter.getGenderId() == null && filter.getSeasonId() != null && filter.getSearch() == null) {
+        } else if (filter.getGenderId() == null && filter.getSeasonId() != null && filter.getSearch() == null && filter.getParentId() == null) {
             filter1 = categoryRepository.findAllBySeasonIdAndDeleteFalse(filter.getSeasonId(), pageable);
-        } else if (filter.getGenderId() == null && filter.getSeasonId() == null && filter.getSearch() != null) {
-            filter1 = categoryRepository.findAllByNameContainingIgnoreCaseAndDeleteFalse(filter.getSearch(), pageable);
+        } else if (filter.getGenderId() != null && filter.getSeasonId() != null && filter.getSearch() != null && filter.getParentId() != null) {
+            filter1 = categoryRepository.
+                    findAllByGenderIdAndSeasonIdAndParentIdAndNameContainingIgnoreCaseAndDeleteFalse(
+                            filter.getGenderId(),
+                            filter.getSeasonId(),
+                            filter.getParentId() == 0 ? null : filter.getParentId(),
+                            filter.getSearch(),
+                            pageable
+                    );
+        } else if (filter.getGenderId() == null && filter.getSeasonId() != null && filter.getSearch() != null && filter.getParentId() != null) {
+            filter1 = categoryRepository.
+                    findAllBySeasonIdAndParentIdAndNameContainingIgnoreCaseAndDeleteFalse(
+                            filter.getSeasonId(),
+                            filter.getParentId() == 0 ? null : filter.getParentId(),
+                            filter.getSearch(),
+                            pageable
+                    );
+        } else if (filter.getGenderId() != null && filter.getSeasonId() == null && filter.getSearch() != null && filter.getParentId() != null) {
+            filter1 = categoryRepository.
+                    findAllByGenderIdAndParentIdAndNameContainingIgnoreCaseAndDeleteFalse(
+                            filter.getGenderId(),
+                            filter.getParentId() == 0 ? null : filter.getParentId(),
+                            filter.getSearch(),
+                            pageable
+                    );
+        } else if (filter.getGenderId() != null && filter.getSeasonId() != null && filter.getSearch() == null && filter.getParentId() != null) {
+            filter1 = categoryRepository.findAllByGenderIdAndSeasonIdAndParentIdAndDeleteFalse(
+                    filter.getGenderId(),
+                    filter.getSeasonId(),
+                    filter.getParentId() == 0 ? null : filter.getParentId(),
+                    pageable
+            );
+        } else if (filter.getGenderId() == null && filter.getSeasonId() != null && filter.getSearch() == null && filter.getParentId() != null) {
+            filter1 = categoryRepository.findAllBySeasonIdAndParentIdAndDeleteFalse(
+                    filter.getSeasonId(),
+                    filter.getParentId() == 0 ? null : filter.getParentId(),
+                    pageable
+            );
+        } else if (filter.getGenderId() != null && filter.getSeasonId() == null && filter.getSearch() == null && filter.getParentId() != null) {
+            filter1 = categoryRepository.
+                    findAllByGenderIdAndParentIdAndDeleteFalse(
+                            filter.getGenderId(),
+                            filter.getParentId() == 0 ? null : filter.getParentId(),
+                            pageable
+                    );
+        } else if (filter.getGenderId() == null && filter.getSeasonId() == null && filter.getSearch() != null && filter.getParentId() != null) {
+            filter1 = categoryRepository.findAllByParentIdAndNameContainingIgnoreCaseAndDeleteFalse(
+                    filter.getParentId()==0?null:filter.getParentId(),
+                    filter.getSearch(),
+                    pageable
+            );
+        } else if (filter.getGenderId() == null && filter.getSeasonId() == null && filter.getSearch() == null && filter.getParentId() != null) {
+            filter1 = categoryRepository.findAllByParentIdAndDeleteFalse(filter.getParentId()==0?null:filter.getParentId(), pageable);
         }
         return filter1;
     }

@@ -27,6 +27,8 @@ public class CategoryRequest {
 
     private Integer genderId;
 
+    private Integer parentId;
+
     public static Category request(CategoryRequest categoryRequest) {
         Category category = new Category();
         if (categoryRequest.getGenderId()!=null) {
@@ -38,6 +40,11 @@ public class CategoryRequest {
             Gender gender = new Gender();
             gender.setId(categoryRequest.getGenderId());
             category.setGender(gender);
+        }
+        if(categoryRequest.getParentId()!=null){
+            Category category1=new Category();
+            category1.setId(categoryRequest.getParentId());
+            category.setParent(category1);
         }
         category.setName(categoryRequest.getName());
         category.setActive(categoryRequest.isActive());

@@ -19,6 +19,24 @@ public interface CategoryRepository extends JpaRepository<Category, Integer> {
 
     Optional<Category> findByIdAndDeleteFalse(Integer id);
 
+    Page<Category> findAllByGenderIdAndSeasonIdAndParentIdAndNameContainingIgnoreCaseAndDeleteFalse(Integer genderId,Integer seasonId,Integer parentId, String search, Pageable pageable);
+
+    Page<Category> findAllByGenderIdAndSeasonIdAndParentIdAndDeleteFalse(Integer genderId,Integer seasonId,Integer parentId, Pageable pageable);
+
+    Page<Category> findAllByGenderIdAndParentIdAndDeleteFalse(Integer genderId,Integer parentId, Pageable pageable);
+
+    Page<Category> findAllBySeasonIdAndParentIdAndDeleteFalse(Integer seasonId,Integer parentId, Pageable pageable);
+
+    Page<Category> findAllByParentIdAndDeleteFalse(Integer parentId, Pageable pageable);
+
+    List<Category> findAllByParentIdAndDeleteFalse(Integer parentId);
+
+    Page<Category> findAllByParentIdAndNameContainingIgnoreCaseAndDeleteFalse(Integer parentId, String search, Pageable pageable);
+
+    Page<Category> findAllByGenderIdAndParentIdAndNameContainingIgnoreCaseAndDeleteFalse(Integer genderId,Integer parentId, String search, Pageable pageable);
+
+    Page<Category> findAllBySeasonIdAndParentIdAndNameContainingIgnoreCaseAndDeleteFalse(Integer seasonId,Integer parentId, String search, Pageable pageable);
+
     Page<Category> findAllByGenderIdAndSeasonIdAndNameContainingIgnoreCaseAndDeleteFalse(Integer genderId,Integer seasonId,String search, Pageable pageable);
 
     Page<Category> findAllByGenderIdAndSeasonIdAndDeleteFalse(Integer genderId,Integer seasonId, Pageable pageable);
