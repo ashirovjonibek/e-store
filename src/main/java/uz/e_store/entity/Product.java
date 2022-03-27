@@ -28,22 +28,22 @@ public class Product extends AbsEntity {
     @ManyToOne(fetch = FetchType.EAGER)
     private Brand brand;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    private List<Size> sizes;
+    @ManyToOne(fetch = FetchType.EAGER)
+    private Size size;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    private List<Gender> genders;
+    @ManyToOne(fetch = FetchType.EAGER)
+    private Gender gender;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    private List<Discount> discounts;
+    @ManyToOne(fetch = FetchType.EAGER)
+    private Discount discount;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    private List<Season> seasons;
+    @ManyToOne(fetch = FetchType.EAGER)
+    private Season season;
 
     @ManyToOne
     private Category category;
 
-    private float price;
+    private Float price;
 
-    private float salePrice;
+    private Float salePrice;
 }
