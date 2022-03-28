@@ -5,15 +5,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import uz.e_store.dtos.request.ProductRequest;
+import uz.e_store.dtos.response.ProductDto;
 import uz.e_store.entity.*;
 import uz.e_store.payload.ApiResponse;
 import uz.e_store.repository.*;
 import uz.e_store.validators.ProductValidator;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class ProductService {
@@ -38,13 +37,34 @@ public class ProductService {
     @Autowired
     GenderRepository genderRepository;
 
+    @Autowired
+    AttachmentService attachmentService;
+
+    public ResponseEntity<?> findAll(String expand) {
+        try {
+            List<Product> all = productRepository.findAll();
+            List<ProductDto> collect = all.stream().map(product -> ProductDto.response(product, expand)).collect(Collectors.toList());
+            return ResponseEntity.status(200).body(new ApiResponse(1, "All products",collect));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(new ApiResponse(0, "Error get all product", null));
+        }
+    }
+
+    public ResponseEntity<?> findById(UUID id,String expand){
+        Optional<Product> product = productRepository.findByIdAndDeleteFalse(id);
+        return product.map(value -> ResponseEntity.status(200).body(new ApiResponse(1, "Get one product!", ProductDto.response(value, expand)))).orElseGet(() -> ResponseEntity.status(404).body(new ApiResponse(0, "Product not found with id!", null)));
+    }
+
     public ResponseEntity<?> save(ProductRequest productRequest) {
         try {
             ProductValidator productValidator = validateRef(productRequest);
             if (productValidator.getValidatorErrors().size() > 0) {
                 return ResponseEntity.status(422).body(new ApiResponse(0, "Validator errors", productValidator.getValidatorErrors()));
             } else {
-                productRepository.save(productValidator.getProduct());
+                Product product = productValidator.getProduct();
+                product.setAttachments(attachmentService.uploadFile(Arrays.asList(productRequest.getPhotos())));
+                productRepository.save(product);
                 return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse(1, "Product saved successfully", null));
             }
         } catch (Exception e) {

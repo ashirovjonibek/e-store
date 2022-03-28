@@ -29,7 +29,7 @@ public class DiscountController {
     //    @PreAuthorize("hasAnyAuthority('ROLE_USER','ROLE_ADMIN')")
     @GetMapping
     public HttpEntity<?> getAllDiscount(
-            @RequestParam(defaultValue = "", required = false) String expand,
+            @RequestParam(required = false) String expand,
             @RequestParam(required = false) String order,
             @RequestParam(required = false,defaultValue = "1") int page,
             @RequestParam(required = false,defaultValue = "20") int size

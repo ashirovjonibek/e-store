@@ -46,4 +46,6 @@ public class Product extends AbsEntity {
     private Float price;
 
     private Float salePrice;
+
+    private boolean delete;
 }
