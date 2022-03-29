@@ -1,14 +1,21 @@
 package uz.e_store.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import uz.e_store.dtos.request.ProductRequest;
+import uz.e_store.dtos.response.Meta;
 import uz.e_store.dtos.response.ProductDto;
 import uz.e_store.entity.*;
+import uz.e_store.filter_objects.ProductFilter;
 import uz.e_store.payload.ApiResponse;
+import uz.e_store.payload.ApiResponseList;
 import uz.e_store.repository.*;
+import uz.e_store.utils.CommonUtils;
 import uz.e_store.validators.ProductValidator;
 
 import java.util.*;
@@ -40,18 +47,32 @@ public class ProductService {
     @Autowired
     AttachmentService attachmentService;
 
-    public ResponseEntity<?> findAll(String expand) {
+    @Autowired
+    JdbcTemplate jdbcTemplate;
+
+//    @PersistenceContext
+//    private EntityManagerFactory entityManagerFactory;
+
+    public ResponseEntity<?> findAll(String expand, ProductFilter productFilter, int size, int page, String order) {
+        List<UUID> uuids = new ArrayList<>();
         try {
-            List<Product> all = productRepository.findAll();
+
+            List<Boolean> id = jdbcTemplate.query(getSql(productFilter, page, size, order),
+                    (rs, rowNum) ->
+                            uuids.add(UUID.fromString(rs.getString("id")))
+            );
+            Pageable pageable = CommonUtils.getPageable(page, size);
+            Page<Product> products = productRepository.findAllByDeleteFalse(pageable);
+            List<Product> all = productRepository.findAllById((Iterable<UUID>)uuids);
             List<ProductDto> collect = all.stream().map(product -> ProductDto.response(product, expand)).collect(Collectors.toList());
-            return ResponseEntity.status(200).body(new ApiResponse(1, "All products",collect));
+            return ResponseEntity.status(200).body(new ApiResponseList(1, "All products", new Meta(products.getTotalPages(),size,page,products.getTotalElements()),collect));
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(500).body(new ApiResponse(0, "Error get all product", null));
         }
     }
 
-    public ResponseEntity<?> findById(UUID id,String expand){
+    public ResponseEntity<?> findById(UUID id, String expand) {
         Optional<Product> product = productRepository.findByIdAndDeleteFalse(id);
         return product.map(value -> ResponseEntity.status(200).body(new ApiResponse(1, "Get one product!", ProductDto.response(value, expand)))).orElseGet(() -> ResponseEntity.status(404).body(new ApiResponse(0, "Product not found with id!", null)));
     }
@@ -137,5 +158,302 @@ public class ProductService {
         }
         return new ProductValidator(product, validate);
     }
+
+    private String getSql(ProductFilter filter, int page, int size, String order) {
+        StringBuffer stringBuffer = new StringBuffer("select id from product");
+        if (filter != null) {
+            Integer categoryId = filter.getCategoryId(), sizeId = filter.getSizeId(), brandId = filter.getBrandId(), genderId = filter.getGenderId(), seasonId = filter.getSeasonId();
+            UUID discountId = filter.getDiscountId();
+            String[] sales = filter.getSalePriceIn() != null ? filter.getSalePriceIn().split("~") : null;
+            Float saleFrom = sales != null ? Float.valueOf(sales[0]) : null, saleTo = sales != null ? Float.valueOf(sales[1]) : null;
+            String search = filter.getSearch();
+            if (categoryId != null) {
+                stringBuffer.append(" where category_id=" + categoryId);
+            }
+            if (sizeId != null) {
+                if (categoryId == null) {
+                    stringBuffer.append(" where size_id=" + sizeId);
+                } else {
+                    stringBuffer.append(" and size_id=" + sizeId);
+                }
+            }
+            if (brandId != null) {
+                if (categoryId == null && sizeId == null) {
+                    stringBuffer.append(" where brand_id=" + brandId);
+                } else {
+                    stringBuffer.append(" and brand_id=" + brandId);
+                }
+            }
+            if (genderId != null) {
+                if (categoryId == null && sizeId == null && brandId == null) {
+                    stringBuffer.append(" where gender_id=" + genderId);
+                } else {
+                    stringBuffer.append(" and gender_id=" + genderId);
+                }
+            }
+            if (seasonId != null) {
+                if (categoryId == null && sizeId == null && brandId == null && genderId == null) {
+                    stringBuffer.append(" where season_id=" + seasonId);
+                } else {
+                    stringBuffer.append(" and season_id=" + seasonId);
+                }
+            }
+            if (discountId != null) {
+                if (categoryId == null && sizeId == null && brandId == null && genderId == null && seasonId == null) {
+                    stringBuffer.append(" where discount_id='" + discountId + "'");
+                } else {
+                    stringBuffer.append(" and discount_id='" + discountId + "'");
+                }
+            }
+            if (saleFrom != null) {
+                if (categoryId == null && sizeId == null && brandId == null && genderId == null && seasonId == null && discountId == null) {
+                    stringBuffer.append(" where sale_price between " + saleFrom + " and " + saleTo);
+                } else {
+                    stringBuffer.append(" and sale_price between " + saleFrom + " and " + saleTo);
+                }
+            }
+            if (search != null) {
+                if (categoryId == null && sizeId == null && brandId == null && genderId == null && seasonId == null && discountId == null && saleFrom == null) {
+                    stringBuffer.append(" where lower(name) like '%" + search.toLowerCase() + "%'");
+                } else {
+                    stringBuffer.append(" and lower(name) like '%" + search.toLowerCase() + "%'");
+                }
+            }
+        }
+        String pageable = pageable(page, size, order);
+        stringBuffer.append(pageable);
+        System.out.println(pageable);
+        return String.valueOf(stringBuffer);
+    }
+
+    private String pageable(int page, int size, String order) {
+        String[] split = order != null ? order.split("~") : new String[0];
+        StringBuffer stringBuffer = new StringBuffer(split.length > 1 ? " order by " + split[0] + " " + split[1] : "");
+        return String.valueOf(stringBuffer.append(" offset " + ((page - 1) * size) + " limit " + (size)));
+    }
+
+
+//  private Page<Product> filter(ProductFilter filter, Pageable pageable) {
+//        Integer categoryId = filter.getCategoryId(), sizeId = filter.getSizeId(), brandId = filter.getBrandId(), genderId = filter.getGenderId(), seasonId = filter.getSeasonId();
+//        UUID discountId = filter.getDiscountId();
+//        String[] sales = filter.getSalePriceIn() != null ? filter.getSalePriceIn().split("~") : null;
+//        Float saleFrom = sales != null ? Float.valueOf(sales[0]) : null, saleTo = sales != null ? Float.valueOf(sales[1]) : null;
+//        String search = filter.getSearch();
+//        if (
+//                categoryId != null &&
+//                        sizeId != null &&
+//                        brandId != null &&
+//                        genderId != null &&
+//                        seasonId != null &&
+//                        discountId != null &&
+//                        saleFrom != null &&
+//                        search != null
+//
+//        ) {
+//            return productRepository.findAllByCategoryIdAndSizeIdAndBrandIdAndGenderIdAndSeasonIdAndDiscountIdAndSalePriceBetweenAndNameContainingIgnoreCaseAndDeleteFalse(
+//                    categoryId, sizeId, brandId, genderId, seasonId, discountId, saleFrom, saleTo, search, pageable
+//            );
+//        } else if (
+//                categoryId == null &&
+//                        sizeId != null &&
+//                        brandId != null &&
+//                        genderId != null &&
+//                        seasonId != null &&
+//                        discountId != null &&
+//                        saleFrom != null &&
+//                        search != null
+//        ) {
+//            return productRepository.findAllBySizeIdAndBrandIdAndGenderIdAndSeasonIdAndDiscountIdAndSalePriceBetweenAndNameContainingIgnoreCaseAndDeleteFalse(
+//                    sizeId, brandId, genderId, seasonId, discountId, saleFrom, saleTo, search, pageable
+//            );
+//        } else if (
+//                categoryId != null &&
+//                        sizeId == null &&
+//                        brandId != null &&
+//                        genderId != null &&
+//                        seasonId != null &&
+//                        discountId != null &&
+//                        saleFrom != null &&
+//                        search != null
+//        ) {
+//            return productRepository.findAllByCategoryIdAndBrandIdAndGenderIdAndSeasonIdAndDiscountIdAndSalePriceBetweenAndNameContainingIgnoreCaseAndDeleteFalse(
+//                    categoryId, brandId, genderId, seasonId, discountId, saleFrom, saleTo, search, pageable
+//            );
+//        } else if (
+//                categoryId != null &&
+//                        sizeId != null &&
+//                        brandId == null &&
+//                        genderId != null &&
+//                        seasonId != null &&
+//                        discountId != null &&
+//                        saleFrom != null &&
+//                        search != null
+//        ) {
+//            return productRepository.findAllByCategoryIdAndSizeIdAndGenderIdAndSeasonIdAndDiscountIdAndSalePriceBetweenAndNameContainingIgnoreCaseAndDeleteFalse(
+//                    categoryId, sizeId, genderId, seasonId, discountId, saleFrom, saleTo, search, pageable
+//            );
+//        } else if (
+//                categoryId != null &&
+//                        sizeId != null &&
+//                        brandId != null &&
+//                        genderId == null &&
+//                        seasonId != null &&
+//                        discountId != null &&
+//                        saleFrom != null &&
+//                        search != null
+//        ) {
+//            return productRepository.findAllByCategoryIdAndSizeIdAndBrandIdAndSeasonIdAndDiscountIdAndSalePriceBetweenAndNameContainingIgnoreCaseAndDeleteFalse(
+//                    categoryId, sizeId, brandId, seasonId, discountId, saleFrom, saleTo, search, pageable
+//            );
+//        } else if (
+//                categoryId != null &&
+//                        sizeId != null &&
+//                        brandId != null &&
+//                        genderId != null &&
+//                        seasonId == null &&
+//                        discountId != null &&
+//                        saleFrom != null &&
+//                        search != null
+//        ) {
+//            return productRepository.findAllByCategoryIdAndSizeIdAndBrandIdAndGenderIdAndDiscountIdAndSalePriceBetweenAndNameContainingIgnoreCaseAndDeleteFalse(
+//                    categoryId, sizeId, brandId, genderId, discountId, saleFrom, saleTo, search, pageable
+//            );
+//        } else if (
+//                categoryId != null &&
+//                        sizeId != null &&
+//                        brandId != null &&
+//                        genderId != null &&
+//                        seasonId != null &&
+//                        discountId == null &&
+//                        saleFrom != null &&
+//                        search != null
+//        ) {
+//            return productRepository.findAllByCategoryIdAndSizeIdAndBrandIdAndGenderIdAndSeasonIdAndSalePriceBetweenAndNameContainingIgnoreCaseAndDeleteFalse(
+//                    categoryId, sizeId, brandId, genderId, seasonId, saleFrom, saleTo, search, pageable
+//            );
+//        } else if (
+//                categoryId != null &&
+//                        sizeId != null &&
+//                        brandId != null &&
+//                        genderId != null &&
+//                        seasonId != null &&
+//                        discountId != null &&
+//                        saleFrom == null &&
+//                        search != null
+//        ) {
+//            return productRepository.findAllByCategoryIdAndSizeIdAndBrandIdAndGenderIdAndSeasonIdAndDiscountIdAndNameContainingIgnoreCaseAndDeleteFalse(
+//                    categoryId, sizeId, brandId, genderId, seasonId, discountId, search, pageable
+//            );
+//        } else if (
+//                categoryId != null &&
+//                        sizeId != null &&
+//                        brandId != null &&
+//                        genderId != null &&
+//                        seasonId != null &&
+//                        discountId != null &&
+//                        saleFrom != null &&
+//                        search == null
+//        ) {
+//            return productRepository.findAllByCategoryIdAndSizeIdAndBrandIdAndGenderIdAndSeasonIdAndDiscountIdAndSalePriceBetweenAndDeleteFalse(
+//                    categoryId, sizeId, brandId, genderId, seasonId, discountId, saleFrom, saleTo, pageable
+//            );
+//        } else if (
+//                categoryId == null &&
+//                        sizeId == null &&
+//                        brandId != null &&
+//                        genderId != null &&
+//                        seasonId != null &&
+//                        discountId != null &&
+//                        saleFrom != null &&
+//                        search != null
+//        ) {
+//            return productRepository.findAllByBrandIdAndGenderIdAndSeasonIdAndDiscountIdAndSalePriceBetweenAndNameContainingIgnoreCaseAndDeleteFalse(
+//                    brandId, genderId, seasonId, discountId, saleFrom, saleTo, search, pageable
+//            );
+//        } else if (
+//                categoryId == null &&
+//                        sizeId != null &&
+//                        brandId == null &&
+//                        genderId != null &&
+//                        seasonId != null &&
+//                        discountId != null &&
+//                        saleFrom != null &&
+//                        search != null
+//        ) {
+//            return productRepository.findAllBySizeIdAndGenderIdAndSeasonIdAndDiscountIdAndSalePriceBetweenAndNameContainingIgnoreCaseAndDeleteFalse(
+//                    sizeId, genderId, seasonId, discountId, saleFrom, saleTo, search, pageable
+//            );
+//        } else if (
+//                categoryId == null &&
+//                        sizeId != null &&
+//                        brandId != null &&
+//                        genderId == null &&
+//                        seasonId != null &&
+//                        discountId != null &&
+//                        saleFrom != null &&
+//                        search != null
+//        ) {
+//            return productRepository.findAllBySizeIdAndBrandIdAndSeasonIdAndDiscountIdAndSalePriceBetweenAndNameContainingIgnoreCaseAndDeleteFalse(
+//                    sizeId, brandId, seasonId, discountId, saleFrom, saleTo, search, pageable
+//            );
+//        } else if (
+//                categoryId == null &&
+//                        sizeId != null &&
+//                        brandId != null &&
+//                        genderId != null &&
+//                        seasonId == null &&
+//                        discountId != null &&
+//                        saleFrom != null &&
+//                        search != null
+//        ) {
+//            return productRepository.findAllBySizeIdAndBrandIdAndGenderIdAndDiscountIdAndSalePriceBetweenAndNameContainingIgnoreCaseAndDeleteFalse(
+//                    sizeId, brandId, genderId, discountId, saleFrom, saleTo, search, pageable
+//            );
+//        } else if (
+//                categoryId == null &&
+//                        sizeId != null &&
+//                        brandId != null &&
+//                        genderId != null &&
+//                        seasonId != null &&
+//                        discountId == null &&
+//                        saleFrom != null &&
+//                        search != null
+//        ) {
+//            return productRepository.findAllBySizeIdAndBrandIdAndGenderIdAndSeasonIdAndSalePriceBetweenAndNameContainingIgnoreCaseAndDeleteFalse(
+//                    sizeId, brandId, genderId, seasonId, saleFrom, saleTo, search, pageable
+//            );
+//        } else if (
+//                categoryId == null &&
+//                        sizeId != null &&
+//                        brandId != null &&
+//                        genderId != null &&
+//                        seasonId != null &&
+//                        discountId != null &&
+//                        saleFrom == null &&
+//                        search != null
+//        ) {
+//            return productRepository.findAllBySizeIdAndBrandIdAndGenderIdAndSeasonIdAndDiscountIdAndNameContainingIgnoreCaseAndDeleteFalse(
+//                    sizeId, brandId, genderId, seasonId, discountId, search, pageable
+//            );
+//        } else if (
+//                categoryId == null &&
+//                        sizeId != null &&
+//                        brandId != null &&
+//                        genderId != null &&
+//                        seasonId != null &&
+//                        discountId != null &&
+//                        saleFrom != null &&
+//                        search == null
+//        ) {
+//            return productRepository.findAllBySizeIdAndBrandIdAndGenderIdAndSeasonIdAndDiscountIdAndSalePriceBetweenAndDeleteFalse(
+//                    sizeId, brandId, genderId, seasonId, discountId, saleFrom, saleTo, pageable
+//            );
+//        }
+//    }
+
+    //    private List<Product> filter(ProductFilter filter,Pageable pageable){
+//        return (List<Product>) entityManager.createNativeQuery("select * from product where discount_id=null ");
+//
+//    }
 
 }

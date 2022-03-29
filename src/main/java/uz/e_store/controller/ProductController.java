@@ -1,12 +1,17 @@
 package uz.e_store.controller;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import uz.e_store.dtos.request.ProductRequest;
+import uz.e_store.filter_objects.ProductFilter;
 import uz.e_store.service.ProductService;
+import uz.e_store.utils.AppConstants;
 
 import java.util.UUID;
 
@@ -19,13 +24,27 @@ public class ProductController {
     ProductService productService;
 
     @GetMapping
-    public HttpEntity<?> getAll(@RequestParam(required = false) String expand) {
-        return productService.findAll(expand);
+    public HttpEntity<?> getAll(
+            @RequestParam(required = false) String expand,
+            @RequestParam(required = false) String filter,
+            @RequestParam(required = false) String order,
+            @RequestParam(required = false, defaultValue = AppConstants.DEFAULT_PAGE) int page,
+            @RequestParam(required = false, defaultValue = AppConstants.DEFAULT_SIZE) int size
+    ) {
+        ProductFilter productFilter = null;
+        if (filter != null) {
+            filter = "{" + filter + "}";
+            GsonBuilder gsonBuilder = new GsonBuilder();
+            Gson gson = gsonBuilder.create();
+            productFilter = gson.fromJson(filter, ProductFilter.class);
+        }
+//        return ResponseEntity.ok(productFilter);
+        return productService.findAll(expand, productFilter, size, page, order);
     }
 
     @GetMapping("/{id}")
     public HttpEntity<?> getOne(@PathVariable String id, @RequestParam(required = false) String expand) {
-        return productService.findById(UUID.fromString(id),expand);
+        return productService.findById(UUID.fromString(id), expand);
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")

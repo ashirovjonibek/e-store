@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import uz.e_store.entity.template.AbsEntity;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
@@ -48,4 +49,8 @@ public class Product extends AbsEntity {
     private Float salePrice;
 
     private boolean delete;
+
+    public Product(String id, String name, BigDecimal price) {
+        System.out.println(id+name+price);
+    }
 }
