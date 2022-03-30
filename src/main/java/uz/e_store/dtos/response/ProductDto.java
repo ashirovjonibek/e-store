@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import uz.e_store.dtos.template.AbsDtoTemplate;
 import uz.e_store.entity.Product;
 
@@ -36,6 +38,7 @@ public class ProductDto extends AbsDtoTemplate {
     private Float salePrice;
 
     public static ProductDto response(Product product, String expand) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         ProductDto productDto = new ProductDto();
         productDto.setName(product.getName());
         productDto.setDescription(product.getDescription());
@@ -44,7 +47,8 @@ public class ProductDto extends AbsDtoTemplate {
         productDto.setCreatedAt(product.getCreatedAt());
         productDto.setUpdatedAt(product.getUpdatedAt());
         productDto.setActive(product.isActive());
-        productDto.setPrice(product.getPrice());
+        if (!(authentication == null || !authentication.isAuthenticated()
+                || "anonymousUser".equals("" + authentication.getPrincipal()))) productDto.setPrice(product.getPrice());
         productDto.setSalePrice(product.getSalePrice());
         if (product.getAttachments() != null) {
             productDto.setPhotos(product.getAttachments().stream().map(attachment -> attachment.getId()));

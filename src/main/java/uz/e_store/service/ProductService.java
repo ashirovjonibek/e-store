@@ -352,6 +352,18 @@ public class ProductService {
         }
     }
 
+    public ResponseEntity<?> getOneFeature(UUID id) {
+        try {
+            Optional<Features> feature = featureRepository.findById(id);
+            return feature
+                    .map(features -> ResponseEntity.ok(new ApiResponse(1, "Product feature", FeatureDto.response(features))))
+                    .orElseGet(() -> ResponseEntity.status(404).body(new ApiResponse(1, "Product feature not found", null)));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(new ApiResponse(0, "Error get product features with productId", null));
+        }
+    }
+
     public ResponseEntity<?> deleteFeature(UUID id) {
         Optional<Features> feature = featureRepository.findById(id);
         if (feature.isPresent()) {

@@ -143,6 +143,11 @@ public class ProductController {
         return productService.getFeatures(UUID.fromString(id));
     }
 
+    @GetMapping("/features/{id}")
+    public HttpEntity<?> getOneFeature(@PathVariable String id){
+        return productService.getOneFeature(UUID.fromString(id));
+    }
+
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     @DeleteMapping("/features/{id}")
     public HttpEntity<?> deleteFeature(@PathVariable String id){
