@@ -49,7 +49,7 @@ public class DiscountService {
             ), collect);
         } catch (Exception e) {
             e.printStackTrace();
-            errorRepository.save(new Error("discount",e.getMessage()));
+            errorRepository.save(new Error("discount",e.getLocalizedMessage()));
             return new ApiResponse((short) 0, "Error read discounts!", null);
         }
     }
