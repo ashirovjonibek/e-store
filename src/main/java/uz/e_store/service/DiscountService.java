@@ -11,9 +11,11 @@ import uz.e_store.dtos.request.DiscountRequest;
 import uz.e_store.dtos.response.Meta;
 import uz.e_store.entity.Brand;
 import uz.e_store.entity.Discount;
+import uz.e_store.entity.Error;
 import uz.e_store.payload.ApiResponse;
 import uz.e_store.payload.ApiResponseList;
 import uz.e_store.repository.DiscountRepository;
+import uz.e_store.repository.ErrorRepository;
 import uz.e_store.utils.CommonUtils;
 
 import java.util.List;
@@ -25,6 +27,9 @@ import java.util.stream.Collectors;
 public class DiscountService {
     @Autowired
     DiscountRepository discountRepository;
+
+    @Autowired
+    ErrorRepository errorRepository;
 
     public ApiResponse findAll(int page, int size, String expand, String order) {
         String[] split = order!=null?order.split("~"):new String[0];
@@ -44,6 +49,7 @@ public class DiscountService {
             ), collect);
         } catch (Exception e) {
             e.printStackTrace();
+            errorRepository.save(new Error("discount",e.getMessage()));
             return new ApiResponse((short) 0, "Error read discounts!", null);
         }
     }

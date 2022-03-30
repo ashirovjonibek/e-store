@@ -10,17 +10,17 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ProductFilter {
-    private Integer categoryId;
+    private String categoryId;
 
-    private Integer sizeId;
+    private String sizeId;
 
-    private Integer brandId;
+    private String brandId;
 
-    private Integer genderId;
+    private String genderId;
 
-    private Integer seasonId;
+    private String seasonId;
 
-    private UUID discountId;
+    private String discountId;
 
     private String search;
 

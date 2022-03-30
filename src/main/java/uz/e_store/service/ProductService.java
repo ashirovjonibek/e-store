@@ -55,17 +55,20 @@ public class ProductService {
 
     public ResponseEntity<?> findAll(String expand, ProductFilter productFilter, int size, int page, String order) {
         List<UUID> uuids = new ArrayList<>();
+        List<Long> count = new ArrayList<>();
         try {
 
-            List<Boolean> id = jdbcTemplate.query(getSql(productFilter, page, size, order),
+            List<Boolean> id = jdbcTemplate.query(getSql(productFilter, "prod", page, size, order),
                     (rs, rowNum) ->
                             uuids.add(UUID.fromString(rs.getString("id")))
             );
-            Pageable pageable = CommonUtils.getPageable(page, size);
-            Page<Product> products = productRepository.findAllByDeleteFalse(pageable);
-            List<Product> all = productRepository.findAllById((Iterable<UUID>)uuids);
+            jdbcTemplate.query(getSql(productFilter, "count", page, size, order),
+                    (rs, rowNum) ->
+                            count.add(rs.getLong("count"))
+            );
+            List<Product> all = productRepository.findAllById(uuids);
             List<ProductDto> collect = all.stream().map(product -> ProductDto.response(product, expand)).collect(Collectors.toList());
-            return ResponseEntity.status(200).body(new ApiResponseList(1, "All products", new Meta(products.getTotalPages(),size,page,products.getTotalElements()),collect));
+            return ResponseEntity.status(200).body(new ApiResponseList(1, "All products", getMeta(size,page,count.get(0)),collect));
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(500).body(new ApiResponse(0, "Error get all product", null));
@@ -159,50 +162,50 @@ public class ProductService {
         return new ProductValidator(product, validate);
     }
 
-    private String getSql(ProductFilter filter, int page, int size, String order) {
-        StringBuffer stringBuffer = new StringBuffer("select id from product");
+    private String getSql(ProductFilter filter, String type, int page, int size, String order) {
+        StringBuffer stringBuffer = new StringBuffer(type.equals("prod") ? "select id from product" : "select count(*) from product");
         if (filter != null) {
-            Integer categoryId = filter.getCategoryId(), sizeId = filter.getSizeId(), brandId = filter.getBrandId(), genderId = filter.getGenderId(), seasonId = filter.getSeasonId();
-            UUID discountId = filter.getDiscountId();
+            String categoryId = filter.getCategoryId(), sizeId = filter.getSizeId(), brandId = filter.getBrandId(), genderId = filter.getGenderId(), seasonId = filter.getSeasonId();
+            String discountId = filter.getDiscountId();
             String[] sales = filter.getSalePriceIn() != null ? filter.getSalePriceIn().split("~") : null;
             Float saleFrom = sales != null ? Float.valueOf(sales[0]) : null, saleTo = sales != null ? Float.valueOf(sales[1]) : null;
             String search = filter.getSearch();
             if (categoryId != null) {
-                stringBuffer.append(" where category_id=" + categoryId);
+                stringBuffer.append(" where category_id in (" + categoryId + ")");
             }
             if (sizeId != null) {
                 if (categoryId == null) {
-                    stringBuffer.append(" where size_id=" + sizeId);
+                    stringBuffer.append(" where size_id in (" + sizeId + ")");
                 } else {
-                    stringBuffer.append(" and size_id=" + sizeId);
+                    stringBuffer.append(" and size_id in (" + sizeId + ")");
                 }
             }
             if (brandId != null) {
                 if (categoryId == null && sizeId == null) {
-                    stringBuffer.append(" where brand_id=" + brandId);
+                    stringBuffer.append(" where brand_id in (" + brandId + ")");
                 } else {
-                    stringBuffer.append(" and brand_id=" + brandId);
+                    stringBuffer.append(" and brand_id in (" + brandId + ")");
                 }
             }
             if (genderId != null) {
                 if (categoryId == null && sizeId == null && brandId == null) {
-                    stringBuffer.append(" where gender_id=" + genderId);
+                    stringBuffer.append(" where gender_id in (" + genderId + ")");
                 } else {
-                    stringBuffer.append(" and gender_id=" + genderId);
+                    stringBuffer.append(" and gender_id in (" + genderId + ")");
                 }
             }
             if (seasonId != null) {
                 if (categoryId == null && sizeId == null && brandId == null && genderId == null) {
-                    stringBuffer.append(" where season_id=" + seasonId);
+                    stringBuffer.append(" where season_id in (" + seasonId + ")");
                 } else {
-                    stringBuffer.append(" and season_id=" + seasonId);
+                    stringBuffer.append(" and season_id in (" + seasonId + ")");
                 }
             }
             if (discountId != null) {
                 if (categoryId == null && sizeId == null && brandId == null && genderId == null && seasonId == null) {
-                    stringBuffer.append(" where discount_id='" + discountId + "'");
+                    stringBuffer.append(" where discount_id in '" + discountId + "'");
                 } else {
-                    stringBuffer.append(" and discount_id='" + discountId + "'");
+                    stringBuffer.append(" and discount_id in '" + discountId + "'");
                 }
             }
             if (saleFrom != null) {
@@ -232,6 +235,21 @@ public class ProductService {
         return String.valueOf(stringBuffer.append(" offset " + ((page - 1) * size) + " limit " + (size)));
     }
 
+    private Meta getMeta(int pageSize, int currentPage, Long totalElement) {
+        Meta meta = new Meta();
+        meta.setCurrentPage(currentPage);
+        meta.setPerPage(pageSize);
+        meta.setTotalElement(totalElement);
+        if (totalElement % pageSize > 0) {
+            int a = (int) (totalElement / pageSize + 1);
+            meta.setTotalPage(a);
+        } else {
+            int a = (int) (totalElement / pageSize);
+            meta.setTotalPage(a);
+        }
+
+        return meta;
+    }
 
 //  private Page<Product> filter(ProductFilter filter, Pageable pageable) {
 //        Integer categoryId = filter.getCategoryId(), sizeId = filter.getSizeId(), brandId = filter.getBrandId(), genderId = filter.getGenderId(), seasonId = filter.getSeasonId();
