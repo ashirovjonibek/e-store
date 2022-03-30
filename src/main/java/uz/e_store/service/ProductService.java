@@ -68,7 +68,7 @@ public class ProductService {
             );
             List<Product> all = productRepository.findAllById(uuids);
             List<ProductDto> collect = all.stream().map(product -> ProductDto.response(product, expand)).collect(Collectors.toList());
-            return ResponseEntity.status(200).body(new ApiResponseList(1, "All products", getMeta(size,page,count.get(0)),collect));
+            return ResponseEntity.status(200).body(new ApiResponseList(1, "All products", getMeta(size, page, count.get(0)), collect));
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(500).body(new ApiResponse(0, "Error get all product", null));
@@ -82,7 +82,7 @@ public class ProductService {
 
     public ResponseEntity<?> save(ProductRequest productRequest) {
         try {
-            ProductValidator productValidator = validateRef(productRequest);
+            ProductValidator productValidator = validateRef(productRequest,true);
             if (productValidator.getValidatorErrors().size() > 0) {
                 return ResponseEntity.status(422).body(new ApiResponse(0, "Validator errors", productValidator.getValidatorErrors()));
             } else {
@@ -96,8 +96,47 @@ public class ProductService {
         }
     }
 
-    private ProductValidator validateRef(ProductRequest productRequest) {
-        Map<String, Object> validate = ProductValidator.validate(productRequest);
+    public ResponseEntity<?> edit(UUID id, ProductRequest productRequest) {
+        Optional<Product> product1 = productRepository.findByIdAndDeleteFalse(id);
+        if (product1.isPresent()){
+            try {
+                ProductValidator productValidator = validateRef(productRequest,false);
+                if (productValidator.getValidatorErrors().size() > 0) {
+                    return ResponseEntity.status(422).body(new ApiResponse(0, "Validator errors", productValidator.getValidatorErrors()));
+                } else {
+                    Product product = productValidator.getProduct();
+                    product.setId(product1.get().getId());
+                    if (productRequest.getPhotos()!=null){
+                        product.setAttachments(attachmentService.uploadFile(Arrays.asList(productRequest.getPhotos())));
+                    }
+                    productRepository.save(product);
+                    return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse(1, "Product updated successfully", null));
+                }
+            } catch (Exception e) {
+                return ResponseEntity.status(500).body(new ApiResponse(0, "Error update product", null));
+            }
+        }else {
+            return ResponseEntity.status(404).body(new ApiResponse(0,"Product not found with id",null));
+        }
+    }
+
+    public ResponseEntity<?> delete(UUID id){
+        Optional<Product> byId = productRepository.findById(id);
+        if (byId.isPresent()){
+            try{
+                productRepository.delete(byId.get());
+                return ResponseEntity.ok(new ApiResponse(1,"Product deleted successfully",null));
+            }catch (Exception e){
+                e.printStackTrace();
+                return ResponseEntity.status(500).body(new ApiResponse(0,"Error delete product",null));
+            }
+        }else {
+            return ResponseEntity.status(404).body(new ApiResponse(0,"Product not found with id",null));
+        }
+    }
+
+    private ProductValidator validateRef(ProductRequest productRequest,boolean create) {
+        Map<String, Object> validate = ProductValidator.validate(productRequest,create);
         Product product = ProductRequest.request(productRequest);
         if (product.getBrand() != null) {
             Optional<Brand> brand = brandRepository.findByIdAndDeleteFalse(product.getBrand().getId());

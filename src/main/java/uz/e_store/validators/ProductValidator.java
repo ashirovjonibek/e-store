@@ -19,7 +19,7 @@ public class ProductValidator {
 
     private Map<String, Object> validatorErrors;
 
-    public static Map<String, Object> validate(ProductRequest productRequest) {
+    public static Map<String, Object> validate(ProductRequest productRequest,boolean create) {
         Map<String, Object> errors = new HashMap<>();
         if (productRequest.getName() == null) {
             List<String> err = new ArrayList<>();
@@ -47,9 +47,11 @@ public class ProductValidator {
             errors.put("salePrice", err);
         }
         if (productRequest.getPhotos() == null) {
-            List<String> err = new ArrayList<>();
-            err.add("Product photo is required!");
-            errors.put("photos", err);
+            if (create){
+                List<String> err = new ArrayList<>();
+                err.add("Product photo is required!");
+                errors.put("photos", err);
+            }
         } else {
             Set<String> err = new HashSet<>();
             List<MultipartFile> photos = Arrays.asList(productRequest.getPhotos());
