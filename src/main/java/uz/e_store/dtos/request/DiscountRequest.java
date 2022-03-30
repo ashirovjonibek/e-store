@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import uz.e_store.entity.Discount;
 
 import javax.validation.constraints.NotNull;
+import java.sql.Date;
 import java.sql.Timestamp;
 
 @Data
@@ -26,7 +27,7 @@ public class DiscountRequest {
 
     public static Discount request(DiscountRequest discountRequest) {
         Discount discount = new Discount();
-        discount.setExpirationDate(discountRequest.getExpirationDate());
+        discount.setExpirationDate(new Date(new java.util.Date(discountRequest.getExpirationDate().getTime()).getTime()));
         discount.setPercent(discountRequest.getPercent());
         discount.setActive(discountRequest.isActive());
         discount.setDescription(discountRequest.getDescription());

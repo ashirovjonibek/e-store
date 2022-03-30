@@ -18,7 +18,7 @@ public class DiscountDto extends AbsDtoTemplate {
 
     public static DiscountDto response(Discount discount, String expand) {
         DiscountDto discountDto = new DiscountDto();
-        discountDto.setExpirationDate(discount.getExpirationDate());
+        discountDto.setExpirationDate(new Timestamp(new java.util.Date(discount.getExpirationDate().getTime()).getTime()));
         discountDto.setPercent(discount.getPercent());
         discountDto.setCreatedAt(discount.getCreatedAt());
         discountDto.setUpdatedAt(discount.getUpdatedAt());
