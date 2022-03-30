@@ -27,6 +27,10 @@ public class CategoryDto extends AbsDtoNameTemplate {
 
     private SeasonDto season;
 
+    private Integer parentId;
+
+    private CategoryDto parent;
+
     private List<CategoryDto> children;
 
     public static CategoryDto response(Category category, String expand) {
@@ -43,6 +47,9 @@ public class CategoryDto extends AbsDtoNameTemplate {
         if(category.getGender()!=null){
             categoryDto.setGenderId(category.getGender().getId());
         }
+        if (category.getParent()!=null){
+            categoryDto.setParentId(category.getParent().getId());
+        }
         if (expand != null) {
             if (expand.contains("createdBy") && category.getCreatedBy() != null) {
                 categoryDto.setCreatedBy(CreatedByUpdatedByDto.response(category.getCreatedBy()));
@@ -55,6 +62,9 @@ public class CategoryDto extends AbsDtoNameTemplate {
             }
             if (expand.contains("gender") && category.getGender() != null) {
                 categoryDto.setGender(GenderDto.response(category.getGender()));
+            }
+            if (expand.contains("parent") && category.getParent() != null) {
+                categoryDto.setParent(CategoryDto.response(category.getParent(),null));
             }
         }
         return categoryDto;
@@ -74,6 +84,7 @@ public class CategoryDto extends AbsDtoNameTemplate {
         if(category.getGender()!=null){
             categoryDto.setGenderId(category.getGender().getId());
         }
+
         if (expand != null) {
             if (expand.contains("createdBy") && category.getCreatedBy() != null) {
                 categoryDto.setCreatedBy(CreatedByUpdatedByDto.response(category.getCreatedBy()));
