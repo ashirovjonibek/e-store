@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import uz.e_store.dtos.request.FeatureRequest;
 import uz.e_store.dtos.request.ProductRequest;
 import uz.e_store.filter_objects.ProductFilter;
 import uz.e_store.service.ProductService;
@@ -115,12 +116,36 @@ public class ProductController {
                 price,
                 salePrice
         );
-        return productService.edit(UUID.fromString(id),productRequest);
+        return productService.edit(UUID.fromString(id), productRequest);
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     @DeleteMapping("/{id}")
-    public HttpEntity<?> delete(@PathVariable String id){
+    public HttpEntity<?> delete(@PathVariable String id) {
         return productService.delete(UUID.fromString(id));
+    }
+
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
+    @PostMapping("/features")
+    public HttpEntity<?> saveFeatures(@RequestBody FeatureRequest feature) {
+        return productService.saveFeature(feature);
+    }
+
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
+    @PutMapping("/features/{id}")
+    public HttpEntity<?> editFeature(@PathVariable String id, @RequestBody FeatureRequest feature) {
+        feature.setId(UUID.fromString(id));
+        return productService.editFeature(feature);
+    }
+
+    @GetMapping("/get-features/{id}")
+    public HttpEntity<?> getFeatures(@PathVariable String id){
+        return productService.getFeatures(UUID.fromString(id));
+    }
+
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
+    @DeleteMapping("/features/{id}")
+    public HttpEntity<?> deleteFeature(@PathVariable String id){
+        return productService.deleteFeature(UUID.fromString(id));
     }
 }

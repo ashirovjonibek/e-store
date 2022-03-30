@@ -3,11 +3,14 @@ package uz.e_store.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+import uz.e_store.dtos.request.FeatureRequest;
 import uz.e_store.dtos.request.ProductRequest;
+import uz.e_store.dtos.response.FeatureDto;
 import uz.e_store.dtos.response.Meta;
 import uz.e_store.dtos.response.ProductDto;
 import uz.e_store.entity.*;
@@ -48,6 +51,9 @@ public class ProductService {
     AttachmentService attachmentService;
 
     @Autowired
+    FeatureRepository featureRepository;
+
+    @Autowired
     JdbcTemplate jdbcTemplate;
 
 //    @PersistenceContext
@@ -82,7 +88,7 @@ public class ProductService {
 
     public ResponseEntity<?> save(ProductRequest productRequest) {
         try {
-            ProductValidator productValidator = validateRef(productRequest,true);
+            ProductValidator productValidator = validateRef(productRequest, true);
             if (productValidator.getValidatorErrors().size() > 0) {
                 return ResponseEntity.status(422).body(new ApiResponse(0, "Validator errors", productValidator.getValidatorErrors()));
             } else {
@@ -98,16 +104,20 @@ public class ProductService {
 
     public ResponseEntity<?> edit(UUID id, ProductRequest productRequest) {
         Optional<Product> product1 = productRepository.findByIdAndDeleteFalse(id);
-        if (product1.isPresent()){
+        if (product1.isPresent()) {
             try {
-                ProductValidator productValidator = validateRef(productRequest,false);
+                ProductValidator productValidator = validateRef(productRequest, false);
                 if (productValidator.getValidatorErrors().size() > 0) {
                     return ResponseEntity.status(422).body(new ApiResponse(0, "Validator errors", productValidator.getValidatorErrors()));
                 } else {
                     Product product = productValidator.getProduct();
                     product.setId(product1.get().getId());
-                    if (productRequest.getPhotos()!=null){
+                    if (productRequest.getPhotos() != null) {
                         product.setAttachments(attachmentService.uploadFile(Arrays.asList(productRequest.getPhotos())));
+                    }else {
+                        if (product.getAttachments()==null){
+                            product.setAttachments(product1.get().getAttachments());
+                        }
                     }
                     productRepository.save(product);
                     return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse(1, "Product updated successfully", null));
@@ -115,28 +125,28 @@ public class ProductService {
             } catch (Exception e) {
                 return ResponseEntity.status(500).body(new ApiResponse(0, "Error update product", null));
             }
-        }else {
-            return ResponseEntity.status(404).body(new ApiResponse(0,"Product not found with id",null));
+        } else {
+            return ResponseEntity.status(404).body(new ApiResponse(0, "Product not found with id", null));
         }
     }
 
-    public ResponseEntity<?> delete(UUID id){
+    public ResponseEntity<?> delete(UUID id) {
         Optional<Product> byId = productRepository.findById(id);
-        if (byId.isPresent()){
-            try{
+        if (byId.isPresent()) {
+            try {
                 productRepository.delete(byId.get());
-                return ResponseEntity.ok(new ApiResponse(1,"Product deleted successfully",null));
-            }catch (Exception e){
+                return ResponseEntity.ok(new ApiResponse(1, "Product deleted successfully", null));
+            } catch (Exception e) {
                 e.printStackTrace();
-                return ResponseEntity.status(500).body(new ApiResponse(0,"Error delete product",null));
+                return ResponseEntity.status(500).body(new ApiResponse(0, "Error delete product", null));
             }
-        }else {
-            return ResponseEntity.status(404).body(new ApiResponse(0,"Product not found with id",null));
+        } else {
+            return ResponseEntity.status(404).body(new ApiResponse(0, "Product not found with id", null));
         }
     }
 
-    private ProductValidator validateRef(ProductRequest productRequest,boolean create) {
-        Map<String, Object> validate = ProductValidator.validate(productRequest,create);
+    private ProductValidator validateRef(ProductRequest productRequest, boolean create) {
+        Map<String, Object> validate = ProductValidator.validate(productRequest, create);
         Product product = ProductRequest.request(productRequest);
         if (product.getBrand() != null) {
             Optional<Brand> brand = brandRepository.findByIdAndDeleteFalse(product.getBrand().getId());
@@ -288,6 +298,73 @@ public class ProductService {
         }
 
         return meta;
+    }
+
+    public ResponseEntity<?> saveFeature(FeatureRequest feature) {
+        if (feature != null && feature.getProductId() != null) {
+            Optional<Product> product = productRepository.findById(feature.getProductId());
+            if (product.isPresent()) {
+                try {
+                    Features request = FeatureRequest.request(feature);
+                    request.setProduct(product.get());
+                    featureRepository.save(request);
+                    return ResponseEntity.status(201).body(new ApiResponse(1, "Feature saved successfully", null));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return ResponseEntity.status(500).body(new ApiResponse(0, "Error save product feature", null));
+                }
+            } else {
+                return ResponseEntity.status(404).body(new ApiResponse(0, "Product not found with productId", null));
+            }
+        } else {
+            return ResponseEntity.status(400).body(new ApiResponse(0, "Data not allowed", null));
+        }
+    }
+
+    public ResponseEntity<?> editFeature(FeatureRequest feature) {
+        if (feature != null && feature.getProductId() != null) {
+            Optional<Product> product = productRepository.findById(feature.getProductId());
+            if (product.isPresent()) {
+                try {
+                    Features request = FeatureRequest.request(feature);
+                    request.setProduct(product.get());
+                    featureRepository.save(request);
+                    return ResponseEntity.status(200).body(new ApiResponse(1, "Feature updated successfully", null));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return ResponseEntity.status(500).body(new ApiResponse(0, "Error update product feature", null));
+                }
+            } else {
+                return ResponseEntity.status(404).body(new ApiResponse(0, "Product not found with productId", null));
+            }
+        } else {
+            return ResponseEntity.status(400).body(new ApiResponse(0, "Data not allowed", null));
+        }
+    }
+
+    public ResponseEntity<?> getFeatures(UUID id) {
+        try {
+            List<Features> features = featureRepository.findAllByProductId(id);
+            return ResponseEntity.ok(new ApiResponse(1,"Product features",features.stream().map(FeatureDto::response)));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(new ApiResponse(0, "Error get product features with productId", null));
+        }
+    }
+
+    public ResponseEntity<?> deleteFeature(UUID id) {
+        Optional<Features> feature = featureRepository.findById(id);
+        if (feature.isPresent()) {
+            try {
+                featureRepository.delete(feature.get());
+                return ResponseEntity.ok(new ApiResponse(1, "Feature deleted successfully", null));
+            } catch (Exception e) {
+                e.printStackTrace();
+                return ResponseEntity.status(500).body(new ApiResponse(0, "Error delete feature", null));
+            }
+        } else {
+            return ResponseEntity.status(404).body(new ApiResponse(0, "Feature not found with id", null));
+        }
     }
 
 //  private Page<Product> filter(ProductFilter filter, Pageable pageable) {
