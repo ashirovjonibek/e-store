@@ -1,6 +1,7 @@
 package uz.e_store.dtos.response;
 
 import lombok.*;
+import uz.e_store.dtos.template.AbsDtoNameTemplate;
 import uz.e_store.dtos.template.AbsDtoTemplate;
 import uz.e_store.entity.Discount;
 
@@ -10,9 +11,11 @@ import java.sql.Timestamp;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class DiscountDto extends AbsDtoTemplate {
+public class DiscountDto extends AbsDtoNameTemplate {
 
     private float percent;
+
+    private String name;
 
     private Timestamp expirationDate;
 
@@ -24,6 +27,7 @@ public class DiscountDto extends AbsDtoTemplate {
         discountDto.setUpdatedAt(discount.getUpdatedAt());
         discountDto.setId(discount.getId());
         discountDto.setActive(discount.isActive());
+        discountDto.setName(discount.getName());
         discountDto.setDescription(discount.getDescription());
         if (expand != null) {
             if (expand.contains("createdBy") && discount.getCreatedBy() != null) {

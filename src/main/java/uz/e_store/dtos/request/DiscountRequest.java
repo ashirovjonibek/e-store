@@ -25,12 +25,15 @@ public class DiscountRequest {
     @NotNull(message = "The expirationDate field should not be empty")
     private Timestamp expirationDate;
 
+    private String name;
+
     public static Discount request(DiscountRequest discountRequest) {
         Discount discount = new Discount();
         discount.setExpirationDate(new Date(new java.util.Date(discountRequest.getExpirationDate().getTime()).getTime()));
         discount.setPercent(discountRequest.getPercent());
         discount.setActive(discountRequest.getActive()==1);
         discount.setDescription(discountRequest.getDescription());
+        discount.setName(discountRequest.getName());
         return discount;
     }
 

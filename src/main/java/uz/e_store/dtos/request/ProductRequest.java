@@ -29,7 +29,7 @@ public class ProductRequest {
 
     private Integer seasonId;
 
-    private UUID discountId;
+    private Integer discountId;
 
     private MultipartFile[] photos;
 

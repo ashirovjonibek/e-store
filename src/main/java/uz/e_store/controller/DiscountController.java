@@ -26,7 +26,6 @@ public class DiscountController {
     @Autowired
     DiscountService discountService;
 
-    //    @PreAuthorize("hasAnyAuthority('ROLE_USER','ROLE_ADMIN')")
     @GetMapping
     public HttpEntity<?> getAllDiscount(
             @RequestParam(required = false) String expand,
@@ -39,10 +38,10 @@ public class DiscountController {
 
     @GetMapping("/{id}")
     public HttpEntity<?> getOneDiscount(
-            @PathVariable String id,
+            @PathVariable Integer id,
             @RequestParam(defaultValue = "", required = false) String expand
     ) {
-        return ResponseEntity.ok(discountService.findById(UUID.fromString(id),expand));
+        return ResponseEntity.ok(discountService.findById(id,expand));
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
@@ -58,10 +57,10 @@ public class DiscountController {
 
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     @PutMapping("/{id}")
-    public HttpEntity<?> editDiscount(@PathVariable String id, @RequestBody DiscountRequest discountRequest) {
+    public HttpEntity<?> editDiscount(@PathVariable Integer id, @RequestBody DiscountRequest discountRequest) {
         Map<String, Object> validate = DiscountValidator.validate(discountRequest);
         if (validate.size() == 0) {
-            return ResponseEntity.ok(discountService.edit(UUID.fromString(id), discountRequest));
+            return ResponseEntity.ok(discountService.edit(id, discountRequest));
         } else {
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(new ErrorResponse(0, "Validator errors!", validate));
         }
@@ -69,7 +68,7 @@ public class DiscountController {
 
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     @DeleteMapping
-    public HttpEntity<?> deleteDiscount(@RequestParam String id) {
-            return ResponseEntity.ok(discountService.delete(UUID.fromString(id)));
+    public HttpEntity<?> deleteDiscount(@RequestParam Integer id) {
+            return ResponseEntity.ok(discountService.delete(id));
     }
 }

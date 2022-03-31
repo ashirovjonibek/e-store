@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.jpa.convert.threetenbp.ThreeTenBackPortJpaConverters;
 import uz.e_store.entity.template.AbsEntity;
+import uz.e_store.entity.template.AbsNameEntity;
 
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -16,7 +17,7 @@ import java.sql.Timestamp;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-public class Discount extends AbsEntity {
+public class Discount extends AbsNameEntity {
 
     private float percent;
 

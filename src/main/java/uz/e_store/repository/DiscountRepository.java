@@ -8,7 +8,7 @@ import uz.e_store.entity.Discount;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface DiscountRepository extends JpaRepository<Discount, UUID> {
+public interface DiscountRepository extends JpaRepository<Discount, Integer> {
      Page<Discount> findAllByDeleteFalse(Pageable pageable);
-     Optional<Discount> findByIdAndDeleteFalse(UUID id);
+     Optional<Discount> findByIdAndDeleteFalse(Integer id);
 }

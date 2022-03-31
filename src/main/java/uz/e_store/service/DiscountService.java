@@ -54,7 +54,7 @@ public class DiscountService {
         }
     }
 
-    public ApiResponse findById(UUID id, String expand) {
+    public ApiResponse findById(Integer id, String expand) {
         try{
             Optional<Discount> byId = discountRepository.findByIdAndDeleteFalse(id);
             return byId.map(discount -> new ApiResponse(1, "Discount with id", DiscountDto.response(discount,expand))).orElseGet(() -> new ApiResponse(0, "Discount not found with id", null));
@@ -73,7 +73,7 @@ public class DiscountService {
         }
     }
 
-    public ApiResponse edit(UUID id, DiscountRequest discountRequest) {
+    public ApiResponse edit(Integer id, DiscountRequest discountRequest) {
         Discount discount = DiscountRequest.request(discountRequest);
         discount.setId(id);
         try {
@@ -85,7 +85,7 @@ public class DiscountService {
         }
     }
 
-    public ApiResponse delete(UUID id) {
+    public ApiResponse delete(Integer id) {
         try{
             Optional<Discount> byId = discountRepository.findByIdAndDeleteFalse(id);
             if (byId.isPresent()){

@@ -62,7 +62,7 @@ public class ProductController {
             @RequestParam(required = false) Integer seasonId,
             @RequestParam(required = false) Float price,
             @RequestParam(required = false) Float salePrice,
-            @RequestParam(required = false) String discountId,
+            @RequestParam(required = false) Integer discountId,
             @RequestParam(required = false, name = "photos") MultipartFile[] photos
     ) {
         ProductRequest productRequest = new ProductRequest(
@@ -75,7 +75,7 @@ public class ProductController {
                 brandId,
                 genderId,
                 seasonId,
-                discountId != null ? UUID.fromString(discountId) : null,
+                discountId,
                 photos,
                 price,
                 salePrice
@@ -98,7 +98,7 @@ public class ProductController {
             @RequestParam(required = false) Integer seasonId,
             @RequestParam(required = false) Float price,
             @RequestParam(required = false) Float salePrice,
-            @RequestParam(required = false) String discountId,
+            @RequestParam(required = false) Integer discountId,
             @RequestParam(required = false, name = "photos") MultipartFile[] photos
     ) {
         ProductRequest productRequest = new ProductRequest(
@@ -111,7 +111,7 @@ public class ProductController {
                 brandId,
                 genderId,
                 seasonId,
-                discountId != null ? UUID.fromString(discountId) : null,
+                discountId,
                 photos,
                 price,
                 salePrice

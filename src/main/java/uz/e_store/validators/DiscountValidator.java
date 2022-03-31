@@ -16,6 +16,11 @@ public class DiscountValidator {
             err.add("Description field not blank!");
             errors.put("description",err);
         }
+        if (discountRequest.getName() == null) {
+            List<String> err=new ArrayList<>();
+            err.add("Name field not blank!");
+            errors.put("name",err);
+        }
         if (discountRequest.getExpirationDate() == null) {
             List<String> err=new ArrayList<>();
             err.add("Expiration date not blank!");
