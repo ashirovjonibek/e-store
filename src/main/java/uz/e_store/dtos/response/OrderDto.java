@@ -33,21 +33,20 @@ public class OrderDto extends AbsDtoTemplate {
             if (expand.contains("updatedBy") && order.getUpdatedBy() != null) {
                 orderDto.setUpdatedBy(CreatedByUpdatedByDto.response(order.getUpdatedBy()));
             }
-            if (order.getUser()!=null){
-                if (expand.contains("user")){
-                    orderDto.setUser(CurrentUserDto.response(order.getUser()));
-                }else {
-                    orderDto.setUser(order.getUser().getId());
-                }
+        }
+        if (order.getUser()!=null){
+            if (expand!=null&&expand.contains("user")){
+                orderDto.setUser(CurrentUserDto.response(order.getUser()));
+            }else {
+                orderDto.setUser(order.getUser().getId());
             }
-            if (order.getProduct()!=null){
-                if (expand.contains("product")){
-                    orderDto.setProduct(order.getProduct());
-                }else {
-                    orderDto.setProduct(order.getProduct().getId());
-                }
+        }
+        if (order.getProduct()!=null){
+            if (expand!=null&&expand.contains("product")){
+                orderDto.setProduct(ProductDto.response(order.getProduct(),null));
+            }else {
+                orderDto.setProduct(order.getProduct().getId());
             }
-
         }
         return orderDto;
     }

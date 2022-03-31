@@ -254,9 +254,9 @@ public class ProductService {
             }
             if (discountId != null) {
                 if (categoryId == null && sizeId == null && brandId == null && genderId == null && seasonId == null) {
-                    stringBuffer.append(" where discount_id in '" + discountId + "'");
+                    stringBuffer.append(" where discount_id in " + discountId);
                 } else {
-                    stringBuffer.append(" and discount_id in '" + discountId + "'");
+                    stringBuffer.append(" and discount_id in " + discountId);
                 }
             }
             if (saleFrom != null) {

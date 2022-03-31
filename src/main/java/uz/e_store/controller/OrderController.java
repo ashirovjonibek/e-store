@@ -27,7 +27,7 @@ public class OrderController {
             @RequestParam(required = false) String productId
 
     ){
-        return orderService.findAll(page,size,expand,order, UUID.fromString(productId),UUID.fromString(userId));
+        return orderService.findAll(page,size,expand,order, productId!=null?UUID.fromString(productId):null,userId!=null?UUID.fromString(userId):null);
     }
 
     @PostMapping
