@@ -63,7 +63,7 @@ public class ProductService {
         List<UUID> uuids = new ArrayList<>();
         List<Long> count = new ArrayList<>();
         try {
-            jdbcTemplate.query("select count(*) from product",
+            jdbcTemplate.query(getSql(productFilter,"count",page,size,order),
                     (rs, rowNum) ->
                             count.add(rs.getLong("count"))
             );
@@ -274,7 +274,7 @@ public class ProductService {
                 }
             }
         }
-        String pageable = pageable(page, size, order, type);
+        String pageable = type.equals("prod")?pageable(page, size, order, type):"";
         stringBuffer.append(pageable);
         System.out.println(pageable);
         return String.valueOf(stringBuffer);
