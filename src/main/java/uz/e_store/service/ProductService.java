@@ -63,17 +63,19 @@ public class ProductService {
         List<UUID> uuids = new ArrayList<>();
         List<Long> count = new ArrayList<>();
         try {
-
-            List<Boolean> id = jdbcTemplate.query(getSql(productFilter, "prod", page, size, order),
-                    (rs, rowNum) ->
-                            uuids.add(UUID.fromString(rs.getString("id")))
-            );
-            jdbcTemplate.query(getSql(productFilter, "count", page, size, order),
+            jdbcTemplate.query("select count(*) from product",
                     (rs, rowNum) ->
                             count.add(rs.getLong("count"))
             );
-            List<Product> all = productRepository.findAllById(uuids);
-            List<ProductDto> collect = all.stream().map(product -> ProductDto.response(product, expand)).collect(Collectors.toList());
+
+            if (count.get(0) != null && count.get(0) > 0 && count.get(0) > (page - 1) * size) {
+                jdbcTemplate.query(getSql(productFilter, "prod", page, size, order),
+                        (rs, rowNum) ->
+                                uuids.add(UUID.fromString(rs.getString("id")))
+                );
+            }
+            List<Product> all = uuids.size()>0?productRepository.findAllById(uuids):null;
+            List<ProductDto> collect = all!=null?all.stream().map(product -> ProductDto.response(product, expand)).collect(Collectors.toList()):new ArrayList<>();
             return ResponseEntity.status(200).body(new ApiResponseList(1, "All products", getMeta(size, page, count.get(0)), collect));
         } catch (Exception e) {
             e.printStackTrace();
@@ -114,8 +116,8 @@ public class ProductService {
                     product.setId(product1.get().getId());
                     if (productRequest.getPhotos() != null) {
                         product.setAttachments(attachmentService.uploadFile(Arrays.asList(productRequest.getPhotos())));
-                    }else {
-                        if (product.getAttachments()==null){
+                    } else {
+                        if (product.getAttachments() == null) {
                             product.setAttachments(product1.get().getAttachments());
                         }
                     }
@@ -272,15 +274,20 @@ public class ProductService {
                 }
             }
         }
-        String pageable = pageable(page, size, order);
+        String pageable = pageable(page, size, order, type);
         stringBuffer.append(pageable);
         System.out.println(pageable);
         return String.valueOf(stringBuffer);
     }
 
-    private String pageable(int page, int size, String order) {
+    private String pageable(int page, int size, String order, String type) {
         String[] split = order != null ? order.split("~") : new String[0];
-        StringBuffer stringBuffer = new StringBuffer(split.length > 1 ? " order by " + split[0] + " " + split[1] : "");
+        if (type.equals("prod")) {
+            order = split.length > 1 ? " order by " + split[0] + " " + split[1] : "";
+        } else {
+            order = "";
+        }
+        StringBuffer stringBuffer = new StringBuffer(order);
         return String.valueOf(stringBuffer.append(" offset " + ((page - 1) * size) + " limit " + (size)));
     }
 
@@ -345,7 +352,7 @@ public class ProductService {
     public ResponseEntity<?> getFeatures(UUID id) {
         try {
             List<Features> features = featureRepository.findAllByProductId(id);
-            return ResponseEntity.ok(new ApiResponse(1,"Product features",features.stream().map(FeatureDto::response)));
+            return ResponseEntity.ok(new ApiResponse(1, "Product features", features.stream().map(FeatureDto::response)));
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(500).body(new ApiResponse(0, "Error get product features with productId", null));

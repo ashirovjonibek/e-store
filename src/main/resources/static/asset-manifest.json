@@ -1,0 +1,21 @@
+{
+  "files": {
+    "main.css": "/bank-crud/static/css/main.f51daadd.css",
+    "main.js": "/bank-crud/static/js/main.278180c4.js",
+    "static/js/787.a35eab4c.chunk.js": "/bank-crud/static/js/787.a35eab4c.chunk.js",
+    "static/media/about-img.jpg": "/bank-crud/static/media/about-img.a7b53c85edeb8966656a.jpg",
+    "static/media/main-r2.jpg": "/bank-crud/static/media/main-r2.fad09c78201ad98ec68a.jpg",
+    "static/media/main-left.jpg": "/bank-crud/static/media/main-left.c65a1dad927b6e7bc186.jpg",
+    "static/media/main-r1.jpg": "/bank-crud/static/media/main-r1.1ec0cdce2908e7ba7f0e.jpg",
+    "static/media/login-img.jpg": "/bank-crud/static/media/login-img.e7d543c41d86c6e6bf70.jpg",
+    "static/media/product2.jpg": "/bank-crud/static/media/product2.ff3800e8eec018a0abe9.jpg",
+    "index.html": "/bank-crud/index.html",
+    "main.f51daadd.css.map": "/bank-crud/static/css/main.f51daadd.css.map",
+    "main.278180c4.js.map": "/bank-crud/static/js/main.278180c4.js.map",
+    "787.a35eab4c.chunk.js.map": "/bank-crud/static/js/787.a35eab4c.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.f51daadd.css",
+    "static/js/main.278180c4.js"
+  ]
+}

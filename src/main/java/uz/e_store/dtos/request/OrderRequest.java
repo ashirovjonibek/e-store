@@ -16,6 +16,8 @@ import java.util.UUID;
 public class OrderRequest extends AbsDtoTemplate {
     private String phoneNumber;
 
+    private String fullName;
+
     private UUID productId;
 
     private int count;

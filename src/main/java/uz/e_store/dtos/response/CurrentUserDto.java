@@ -27,15 +27,16 @@ public class CurrentUserDto {
 
     private String imageUrl;
 
-    public static CurrentUserDto response(User user){
-        CurrentUserDto currentUserDto=new CurrentUserDto();
+    public static CurrentUserDto response(User user) {
+        CurrentUserDto currentUserDto = new CurrentUserDto();
         currentUserDto.setId(user.getId());
         currentUserDto.setLastName(user.getLastName());
         currentUserDto.setFirstName(user.getFirstName());
         currentUserDto.setPhoneNumber(user.getPhoneNumber());
-        currentUserDto.setRoles(user.getRoles().stream().map(role -> role.getRoleName().name()).collect(Collectors.toSet()));
-        currentUserDto.setUsername(user.getUsername());
-        if (user.getAttachment()!=null){
+        if (user.getRoles() != null)
+            currentUserDto.setRoles(user.getRoles().stream().map(role -> role.getRoleName().name()).collect(Collectors.toSet()));
+        if (user.getUsername() != null) currentUserDto.setUsername(user.getUsername());
+        if (user.getAttachment() != null) {
             currentUserDto.setImageUrl(user.getAttachment().getUrl());
         }
         return currentUserDto;

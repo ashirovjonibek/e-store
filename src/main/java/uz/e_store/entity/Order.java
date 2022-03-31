@@ -8,6 +8,7 @@ import uz.e_store.entity.template.AbsEntity;
 
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 
 @EqualsAndHashCode(callSuper = true)
@@ -16,7 +17,9 @@ import javax.persistence.OneToOne;
 @NoArgsConstructor
 @Entity(name = "orders")
 public class Order extends AbsEntity {
-    private String phoneNumber;
+
+    @ManyToOne
+    private User user;
 
     @OneToOne(fetch = FetchType.EAGER)
     private Product product;
