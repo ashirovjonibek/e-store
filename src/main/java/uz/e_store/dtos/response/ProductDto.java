@@ -33,6 +33,8 @@ public class ProductDto extends AbsDtoTemplate {
 
     private Object category;
 
+    private Object colors;
+
     private Float price;
 
     private Float salePrice;
@@ -82,6 +84,12 @@ public class ProductDto extends AbsDtoTemplate {
             if (expand != null && expand.contains("category")) {
                 productDto.setCategory(CategoryDto.response(product.getCategory(), null));
             } else productDto.setCategory(product.getCategory().getId());
+        }
+
+        if (product.getColors() != null&&product.getColors().size()>0) {
+            if (expand != null && expand.contains("colors")) {
+                productDto.setColors(product.getColors().stream().map(e->ColorDto.response(e,null)));
+            } else productDto.setColors(product.getColors().stream().map(e->e.getId()));
         }
 
         if (expand != null) {

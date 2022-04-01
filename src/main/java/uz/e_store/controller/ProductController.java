@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -14,6 +13,9 @@ import uz.e_store.filter_objects.ProductFilter;
 import uz.e_store.service.ProductService;
 import uz.e_store.utils.AppConstants;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -28,6 +30,7 @@ public class ProductController {
     public HttpEntity<?> getAll(
             @RequestParam(required = false) String expand,
             @RequestParam(required = false) String filter,
+            @RequestParam(required = false) String colorIds,
             @RequestParam(required = false) String order,
             @RequestParam(required = false, defaultValue = AppConstants.DEFAULT_PAGE) int page,
             @RequestParam(required = false, defaultValue = AppConstants.DEFAULT_SIZE) int size
@@ -38,6 +41,12 @@ public class ProductController {
             GsonBuilder gsonBuilder = new GsonBuilder();
             Gson gson = gsonBuilder.create();
             productFilter = gson.fromJson(filter, ProductFilter.class);
+        }
+        if (filter==null&&colorIds!=null&&!colorIds.equals("")){
+            productFilter=new ProductFilter();
+            productFilter.setColorId(colorIds);
+        }else if (filter!=null&&colorIds!=null&&!colorIds.equals("")){
+            productFilter.setColorId(colorIds);
         }
 //        return ResponseEntity.ok(productFilter);
         return productService.findAll(expand, productFilter, size, page, order);
@@ -63,8 +72,14 @@ public class ProductController {
             @RequestParam(required = false) Float price,
             @RequestParam(required = false) Float salePrice,
             @RequestParam(required = false) Integer discountId,
+            @RequestParam(required = false) String colors,
             @RequestParam(required = false, name = "photos") MultipartFile[] photos
     ) {
+        String[] split = colors.split(",");
+        Integer[] colorIds=new Integer[split.length];
+        for (int i = 0; i < split.length; i++) {
+            colorIds[i]=Integer.valueOf(split[i]);
+        }
         ProductRequest productRequest = new ProductRequest(
                 name,
                 description,
@@ -76,6 +91,7 @@ public class ProductController {
                 genderId,
                 seasonId,
                 discountId,
+                colorIds,
                 photos,
                 price,
                 salePrice
@@ -99,8 +115,14 @@ public class ProductController {
             @RequestParam(required = false) Float price,
             @RequestParam(required = false) Float salePrice,
             @RequestParam(required = false) Integer discountId,
+            @RequestParam(required = false) String colors,
             @RequestParam(required = false, name = "photos") MultipartFile[] photos
     ) {
+        String[] split = colors.split(",");
+        Integer[] colorIds=new Integer[split.length];
+        for (int i = 0; i < split.length; i++) {
+            colorIds[i]=Integer.valueOf(split[i]);
+        }
         ProductRequest productRequest = new ProductRequest(
                 name,
                 description,
@@ -112,6 +134,7 @@ public class ProductController {
                 genderId,
                 seasonId,
                 discountId,
+                colorIds,
                 photos,
                 price,
                 salePrice

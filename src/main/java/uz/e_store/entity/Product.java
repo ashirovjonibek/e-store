@@ -41,6 +41,9 @@ public class Product extends AbsEntity {
     @ManyToOne(fetch = FetchType.EAGER)
     private Season season;
 
+    @ManyToMany
+    private List<Color> colors;
+
     @ManyToOne
     private Category category;
 

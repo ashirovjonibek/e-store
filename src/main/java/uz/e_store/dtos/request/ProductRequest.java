@@ -6,6 +6,9 @@ import lombok.NoArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
 import uz.e_store.entity.*;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 @Data
 @AllArgsConstructor
@@ -30,6 +33,8 @@ public class ProductRequest {
     private Integer seasonId;
 
     private Integer discountId;
+
+    private Integer[] colors;
 
     private MultipartFile[] photos;
 
