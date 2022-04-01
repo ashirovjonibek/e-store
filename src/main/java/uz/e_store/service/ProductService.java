@@ -56,14 +56,12 @@ public class ProductService {
     @Autowired
     JdbcTemplate jdbcTemplate;
 
-//    @PersistenceContext
-//    private EntityManagerFactory entityManagerFactory;
-
     public ResponseEntity<?> findAll(String expand, ProductFilter productFilter, int size, int page, String order) {
         List<UUID> uuids = new ArrayList<>();
         List<Long> count = new ArrayList<>();
         try {
-            jdbcTemplate.query(getSql(productFilter,"count",page,size,order),
+            System.out.println(getSql(productFilter, "count", page, size, order));
+            jdbcTemplate.query(getSql(productFilter, "count", page, size, order),
                     (rs, rowNum) ->
                             count.add(rs.getLong("count"))
             );
@@ -74,8 +72,8 @@ public class ProductService {
                                 uuids.add(UUID.fromString(rs.getString("id")))
                 );
             }
-            List<Product> all = uuids.size()>0?productRepository.findAllById(uuids):null;
-            List<ProductDto> collect = all!=null?all.stream().map(product -> ProductDto.response(product, expand)).collect(Collectors.toList()):new ArrayList<>();
+            List<Product> all = uuids.size() > 0 ? productRepository.findAllById(uuids) : null;
+            List<ProductDto> collect = all != null ? all.stream().map(product -> ProductDto.response(product, expand)).collect(Collectors.toList()) : new ArrayList<>();
             return ResponseEntity.status(200).body(new ApiResponseList(1, "All products", getMeta(size, page, count.get(0)), collect));
         } catch (Exception e) {
             e.printStackTrace();
@@ -221,60 +219,83 @@ public class ProductService {
             String[] sales = filter.getSalePriceIn() != null ? filter.getSalePriceIn().split("~") : null;
             Float saleFrom = sales != null ? Float.valueOf(sales[0]) : null, saleTo = sales != null ? Float.valueOf(sales[1]) : null;
             String search = filter.getSearch();
-            if (categoryId != null) {
+            if (categoryId != null && !categoryId.equals("")) {
                 stringBuffer.append(" where category_id in (" + categoryId + ")");
             }
-            if (sizeId != null) {
-                if (categoryId == null) {
+            if (sizeId != null && !sizeId.equals("")) {
+                if (categoryId == null && categoryId.equals("")) {
                     stringBuffer.append(" where size_id in (" + sizeId + ")");
                 } else {
                     stringBuffer.append(" and size_id in (" + sizeId + ")");
                 }
             }
-            if (brandId != null) {
-                if (categoryId == null && sizeId == null) {
+            if (brandId != null && !brandId.equals("")) {
+                if ((categoryId == null && categoryId.equals("")) && (sizeId == null && sizeId.equals(""))) {
                     stringBuffer.append(" where brand_id in (" + brandId + ")");
                 } else {
                     stringBuffer.append(" and brand_id in (" + brandId + ")");
                 }
             }
-            if (genderId != null) {
-                if (categoryId == null && sizeId == null && brandId == null) {
+            if (genderId != null && !genderId.equals("")) {
+                if ((categoryId == null && categoryId.equals("")) && (sizeId == null && sizeId.equals("")) && (brandId == null && brandId.equals(""))) {
                     stringBuffer.append(" where gender_id in (" + genderId + ")");
                 } else {
                     stringBuffer.append(" and gender_id in (" + genderId + ")");
                 }
             }
-            if (seasonId != null) {
-                if (categoryId == null && sizeId == null && brandId == null && genderId == null) {
+            if (seasonId != null && !seasonId.equals("")) {
+                if (
+                        (categoryId == null && categoryId.equals(""))
+                                && (sizeId == null && sizeId.equals(""))
+                                && (brandId == null && brandId.equals(""))
+                                && (genderId == null && genderId.equals(""))
+                ) {
                     stringBuffer.append(" where season_id in (" + seasonId + ")");
                 } else {
                     stringBuffer.append(" and season_id in (" + seasonId + ")");
                 }
             }
-            if (discountId != null) {
-                if (categoryId == null && sizeId == null && brandId == null && genderId == null && seasonId == null) {
-                    stringBuffer.append(" where discount_id in (" + discountId+")");
+            if (discountId != null && !discountId.equals("")) {
+                if (
+                        (categoryId == null && categoryId.equals(""))
+                                && (sizeId == null && sizeId.equals(""))
+                                && (brandId == null && brandId.equals(""))
+                                && (genderId == null && genderId.equals(""))
+                                && seasonId == null && seasonId.equals("")
+                ) {
+                    stringBuffer.append(" where discount_id in (" + discountId + ")");
                 } else {
-                    stringBuffer.append(" and discount_id in (" + discountId+")");
+                    stringBuffer.append(" and discount_id in (" + discountId + ")");
                 }
             }
             if (saleFrom != null) {
-                if (categoryId == null && sizeId == null && brandId == null && genderId == null && seasonId == null && discountId == null) {
+                if (
+                        (categoryId == null && categoryId.equals(""))
+                                && (sizeId == null && sizeId.equals(""))
+                                && (brandId == null && brandId.equals(""))
+                                && (genderId == null && genderId.equals(""))
+                                && seasonId == null && seasonId.equals("")
+                                && discountId == null && discountId.equals("")) {
                     stringBuffer.append(" where sale_price between " + saleFrom + " and " + saleTo);
                 } else {
                     stringBuffer.append(" and sale_price between " + saleFrom + " and " + saleTo);
                 }
             }
-            if (search != null) {
-                if (categoryId == null && sizeId == null && brandId == null && genderId == null && seasonId == null && discountId == null && saleFrom == null) {
+            if (search != null && search.equals("")) {
+                if (
+                        (categoryId == null && categoryId.equals(""))
+                                && (sizeId == null && sizeId.equals(""))
+                                && (brandId == null && brandId.equals(""))
+                                && (genderId == null && genderId.equals(""))
+                                && seasonId == null && seasonId.equals("")
+                                && discountId == null && discountId.equals("") && saleFrom == null) {
                     stringBuffer.append(" where lower(name) like '%" + search.toLowerCase() + "%'");
                 } else {
                     stringBuffer.append(" and lower(name) like '%" + search.toLowerCase() + "%'");
                 }
             }
         }
-        String pageable = type.equals("prod")?pageable(page, size, order, type):"";
+        String pageable = type.equals("prod") ? pageable(page, size, order, type) : "";
         stringBuffer.append(pageable);
         System.out.println(pageable);
         return String.valueOf(stringBuffer);
