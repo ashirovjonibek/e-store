@@ -16,6 +16,8 @@ public class ColorDto extends AbsDtoNameTemplate {
 
     private String colorHex;
 
+    private String name;
+
     public static ColorDto response(Color color, String expand) {
         ColorDto colorDto = new ColorDto();
         colorDto.setCreatedAt(color.getCreatedAt());
@@ -24,6 +26,7 @@ public class ColorDto extends AbsDtoNameTemplate {
         colorDto.setActive(color.isActive());
         colorDto.setColorHex(color.getColorHex());
         colorDto.setDescription(color.getDescription());
+        colorDto.setName(color.getName());
         if (expand != null) {
             if (expand.contains("createdBy") && color.getCreatedBy() != null) {
                 colorDto.setCreatedBy(CreatedByUpdatedByDto.response(color.getCreatedBy()));

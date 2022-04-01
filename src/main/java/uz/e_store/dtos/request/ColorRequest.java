@@ -17,12 +17,14 @@ public class ColorRequest {
 
     private String colorHex;
 
+    private String name;
+
     public static Color request(ColorRequest colorRequest) {
         Color color = new Color();
         color.setActive(colorRequest.getActive()==1);
         color.setDescription(colorRequest.getDescription());
         color.setColorHex(colorRequest.getColorHex());
-        color.setName("---");
+        color.setName(colorRequest.getName());
         return color;
     }
 }
