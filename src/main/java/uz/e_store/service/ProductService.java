@@ -105,7 +105,7 @@ public class ProductService {
         }
     }
 
-    public ResponseEntity<?> edit(UUID id, ProductRequest productRequest) {
+    public ResponseEntity<?> edit(UUID id, ProductRequest productRequest, String oldPhotos) {
         Optional<Product> product1 = productRepository.findByIdAndDeleteFalse(id);
         if (product1.isPresent()) {
             try {
@@ -116,7 +116,16 @@ public class ProductService {
                     Product product = productValidator.getProduct();
                     product.setId(product1.get().getId());
                     if (productRequest.getPhotos() != null) {
-                        product.setAttachments(attachmentService.uploadFile(Arrays.asList(productRequest.getPhotos())));
+                        List<Attachment> attachments = attachmentService.uploadFile(Arrays.asList(productRequest.getPhotos()));
+                        if (oldPhotos != null && !oldPhotos.equals("")) {
+                            product1.get().getAttachments().forEach(attachment -> {
+                                if (oldPhotos.contains(attachment.getId().toString())) {
+                                    attachments.add(attachment);
+                                }
+                            });
+                        }
+
+                        product.setAttachments(attachments);
                     } else {
                         if (product.getAttachments() == null) {
                             product.setAttachments(product1.get().getAttachments());
@@ -211,11 +220,11 @@ public class ProductService {
                 validate.put("genderId", err);
             }
         }
-        if (productRequest.getColors()!=null&&productRequest.getColors().length>0){
-            List<Color> colors=colorRepository.findAllById(Arrays.asList(productRequest.getColors()));
-            if (colors.size()==Arrays.asList(productRequest.getColors()).size()){
+        if (productRequest.getColors() != null && productRequest.getColors().length > 0) {
+            List<Color> colors = colorRepository.findAllById(Arrays.asList(productRequest.getColors()));
+            if (colors.size() == Arrays.asList(productRequest.getColors()).size()) {
                 product.setColors(colors);
-            }else {
+            } else {
                 List<String> err = new ArrayList<>();
                 err.add("Color not found with id");
                 validate.put("colors", err);
@@ -227,7 +236,7 @@ public class ProductService {
     private String getSql(ProductFilter filter, String type, int page, int size, String order) {
         StringBuffer stringBuffer = new StringBuffer(type.equals("prod") ? "select id from product" : "select count(*) from product");
         if (filter != null) {
-            String categoryId = filter.getCategoryId(),colorIds=filter.getColorId(), sizeId = filter.getSizeId(), brandId = filter.getBrandId(), genderId = filter.getGenderId(), seasonId = filter.getSeasonId();
+            String categoryId = filter.getCategoryId(), colorIds = filter.getColorId(), sizeId = filter.getSizeId(), brandId = filter.getBrandId(), genderId = filter.getGenderId(), seasonId = filter.getSeasonId();
             String discountId = filter.getDiscountId();
             String[] sales = filter.getSalePriceIn() != null ? filter.getSalePriceIn().split("~") : null;
             Float saleFrom = sales != null ? Float.valueOf(sales[0]) : null, saleTo = sales != null ? Float.valueOf(sales[1]) : null;
@@ -301,7 +310,7 @@ public class ProductService {
                                 && (brandId == null || brandId.equals(""))
                                 && (genderId == null || genderId.equals(""))
                                 && (seasonId == null || seasonId.equals(""))
-                                &&( discountId == null || discountId.equals("")) && saleFrom == null) {
+                                && (discountId == null || discountId.equals("")) && saleFrom == null) {
                     stringBuffer.append(" where lower(name) like '%" + search.toLowerCase() + "%'");
                 } else {
                     stringBuffer.append(" and lower(name) like '%" + search.toLowerCase() + "%'");
@@ -316,10 +325,10 @@ public class ProductService {
                                 && (seasonId == null || seasonId.equals(""))
                                 && (discountId == null || discountId.equals(""))
                                 && saleFrom == null
-                                &&(search == null || search.equals(""))) {
-                    stringBuffer.append(" where id in (select product_id from product_colors where colors_id in ("+colorIds+"))");
+                                && (search == null || search.equals(""))) {
+                    stringBuffer.append(" where id in (select product_id from product_colors where colors_id in (" + colorIds + "))");
                 } else {
-                    stringBuffer.append(" and id in (select product_id from product_colors where colors_id in ("+colorIds+"))");
+                    stringBuffer.append(" and id in (select product_id from product_colors where colors_id in (" + colorIds + "))");
                 }
             }
         }

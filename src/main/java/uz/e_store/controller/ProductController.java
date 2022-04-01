@@ -116,7 +116,8 @@ public class ProductController {
             @RequestParam(required = false) Float salePrice,
             @RequestParam(required = false) Integer discountId,
             @RequestParam(required = false) String colors,
-            @RequestParam(required = false, name = "photos") MultipartFile[] photos
+            @RequestParam(required = false, name = "photos") MultipartFile[] photos,
+            @RequestParam(required = false) String oldPhotos
     ) {
         String[] split = colors.split(",");
         Integer[] colorIds=new Integer[split.length];
@@ -139,7 +140,7 @@ public class ProductController {
                 price,
                 salePrice
         );
-        return productService.edit(UUID.fromString(id), productRequest);
+        return productService.edit(UUID.fromString(id), productRequest,oldPhotos);
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
