@@ -60,10 +60,10 @@ public class ProductDto extends AbsDtoTemplate {
                 productDto.setBrand(BrandDto.response(product.getBrand(), null));
             } else productDto.setBrand(product.getBrand().getId());
         }
-        if (product.getSize() != null) {
+        if (product.getSizes() != null) {
             if (expand != null && expand.contains("size")) {
-                productDto.setSize(SizeDto.response(product.getSize(), null));
-            } else productDto.setSize(product.getSize().getId());
+                productDto.setSize(product.getSizes().stream().map(size1 -> SizeDto.response(size1, null)));
+            } else productDto.setSize(product.getSizes().stream().map(size1 -> size1.getId()));
         }
         if (product.getDiscount() != null) {
             if (expand != null && expand.contains("discount")) {

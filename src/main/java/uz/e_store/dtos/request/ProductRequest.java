@@ -24,7 +24,7 @@ public class ProductRequest {
 
     private Integer categoryId;
 
-    private Integer sizeId;
+    private List<Integer> sizeId;
 
     private Integer brandId;
 
@@ -54,11 +54,6 @@ public class ProductRequest {
             Category category=new Category();
             category.setId(productRequest.getCategoryId());
             product.setCategory(category);
-        }
-        if (productRequest.getSizeId()!=null){
-            Size size=new Size();
-            size.setId(productRequest.getSizeId());
-            product.setSize(size);
         }
         if (productRequest.getBrandId()!=null){
             Brand brand=new Brand();

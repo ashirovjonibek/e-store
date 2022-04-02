@@ -180,10 +180,10 @@ public class ProductService {
                 validate.put("categoryId", err);
             }
         }
-        if (product.getSize() != null) {
-            Optional<Size> size = sizeRepository.findByIdAndDeleteFalse(product.getSize().getId());
-            if (size.isPresent()) {
-                product.setSize(size.get());
+        if (productRequest.getSizeId() != null&&productRequest.getSizeId().size()>0) {
+            List<Size> size = sizeRepository.findAllById(productRequest.getSizeId());
+            if (size.size()==productRequest.getSizeId().size()) {
+                product.setSizes(size);
             } else {
                 List<String> err = new ArrayList<>();
                 err.add("Size not found with id");
@@ -245,9 +245,9 @@ public class ProductService {
             }
             if (sizeId != null && !sizeId.equals("")) {
                 if (categoryId == null || categoryId.equals("")) {
-                    stringBuffer.append(" where size_id in (" + sizeId + ")");
+                    stringBuffer.append(" where id in (select product_id from product_sizes where sizes_id in (" + sizeId + "))");
                 } else {
-                    stringBuffer.append(" and size_id in (" + sizeId + ")");
+                    stringBuffer.append(" and id in (select product_id from product_sizes where sizes_id in (" + sizeId + "))");
                 }
             }
             if (brandId != null && !brandId.equals("")) {

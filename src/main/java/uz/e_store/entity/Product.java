@@ -29,8 +29,8 @@ public class Product extends AbsEntity {
     @ManyToOne(fetch = FetchType.EAGER)
     private Brand brand;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    private Size size;
+    @ManyToMany
+    private List<Size> sizes;
 
     @ManyToOne(fetch = FetchType.EAGER)
     private Gender gender;
