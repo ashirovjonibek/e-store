@@ -117,20 +117,21 @@ public class ProductService {
                     product.setId(product1.get().getId());
                     if (productRequest.getPhotos() != null) {
                         List<Attachment> attachments = attachmentService.uploadFile(Arrays.asList(productRequest.getPhotos()));
-                        if (oldPhotos != null && !oldPhotos.equals("")) {
-                            product1.get().getAttachments().forEach(attachment -> {
-                                if (oldPhotos.contains(attachment.getId().toString())) {
-                                    attachments.add(attachment);
-                                }
-                            });
-                        }
-
                         product.setAttachments(attachments);
                     } else {
                         if (product.getAttachments() == null) {
                             product.setAttachments(product1.get().getAttachments());
                         }
                     }
+                    List<Attachment> attachments = product.getAttachments();
+                    if (oldPhotos != null && !oldPhotos.equals("")) {
+                        product1.get().getAttachments().forEach(attachment -> {
+                            if (oldPhotos.contains(attachment.getId().toString())) {
+                                attachments.add(attachment);
+                            }
+                        });
+                    }
+                    product.setAttachments(attachments);
                     productRepository.save(product);
                     return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse(1, "Product updated successfully", null));
                 }
