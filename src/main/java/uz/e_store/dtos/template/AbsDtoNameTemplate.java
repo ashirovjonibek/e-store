@@ -21,5 +21,5 @@ public abstract class AbsDtoNameTemplate {
 
     private String description;
 
-    private int active;
+    private boolean active;
 }

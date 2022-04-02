@@ -18,6 +18,8 @@ public class BlogDto extends AbsDtoNameTemplate {
 
     private Object photo;
 
+    private int active;
+
     public static BlogDto response(Blog blog, String expand) {
         BlogDto blogDto = new BlogDto();
         blogDto.setCreatedAt(blog.getCreatedAt());
