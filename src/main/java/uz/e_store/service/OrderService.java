@@ -47,7 +47,7 @@ public class OrderService {
                     User user = null;
                     Optional<User> user1 = userRepository.findByPhoneNumber(orderRequest.getPhoneNumber());
                     user = user1.orElseGet(() -> userRepository.save(new User(orderRequest.getFullName(), orderRequest.getFullName(), orderRequest.getPhoneNumber())));
-                    Order order = new Order(user, byId.get(), orderRequest.getCount(), orderRequest.getConfirm());
+                    Order order = new Order(user, byId.get(), orderRequest.getCount(), orderRequest.getConfirm(),orderRequest.getColor(),orderRequest.getSize());
                     order.setDescription(orderRequest.getDescription());
                     orderRepository.save(order);
                     return ResponseEntity.ok(new ApiResponse(1, "Order saved successfully", null));

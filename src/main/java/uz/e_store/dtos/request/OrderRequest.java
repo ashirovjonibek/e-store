@@ -24,7 +24,7 @@ public class OrderRequest extends AbsDtoTemplate {
 
     private int confirm;
 
-    public  Order request(OrderRequest orderRequest){
-        return null;
-    }
+    private String color;
+
+    private String size;
 }

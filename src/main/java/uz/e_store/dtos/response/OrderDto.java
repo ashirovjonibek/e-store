@@ -21,6 +21,12 @@ public class OrderDto extends AbsDtoTemplate {
 
     private int count;
 
+    private int confirm;
+
+    private String color;
+
+    private String size;
+
     public static OrderDto response(Order order, String expand) {
         OrderDto orderDto = new OrderDto();
         orderDto.setCreatedAt(order.getCreatedAt());
@@ -29,6 +35,9 @@ public class OrderDto extends AbsDtoTemplate {
         orderDto.setActive(order.isActive());
         orderDto.setDescription(order.getDescription());
         orderDto.setCount(order.getCount());
+        orderDto.setConfirm(order.getConfirm());
+        orderDto.setColor(order.getColor());
+        orderDto.setSize(order.getSize());
         if (expand != null) {
             if (expand.contains("createdBy") && order.getCreatedBy() != null) {
                 orderDto.setCreatedBy(CreatedByUpdatedByDto.response(order.getCreatedBy()));

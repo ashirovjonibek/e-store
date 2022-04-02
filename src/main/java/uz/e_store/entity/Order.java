@@ -27,4 +27,8 @@ public class Order extends AbsEntity {
     private int count;
 
     private int confirm;
+
+    private String color;
+
+    private String size;
 }
