@@ -19,6 +19,8 @@ public class OrderDto extends AbsDtoTemplate {
 
     private Object product;
 
+    private int count;
+
     public static OrderDto response(Order order, String expand) {
         OrderDto orderDto = new OrderDto();
         orderDto.setCreatedAt(order.getCreatedAt());
@@ -26,6 +28,7 @@ public class OrderDto extends AbsDtoTemplate {
         orderDto.setId(order.getId());
         orderDto.setActive(order.isActive());
         orderDto.setDescription(order.getDescription());
+        orderDto.setCount(order.getCount());
         if (expand != null) {
             if (expand.contains("createdBy") && order.getCreatedBy() != null) {
                 orderDto.setCreatedBy(CreatedByUpdatedByDto.response(order.getCreatedBy()));
