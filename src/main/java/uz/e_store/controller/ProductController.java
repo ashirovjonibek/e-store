@@ -42,10 +42,10 @@ public class ProductController {
             Gson gson = gsonBuilder.create();
             productFilter = gson.fromJson(filter, ProductFilter.class);
         }
-        if (filter==null&&colorIds!=null&&!colorIds.equals("")){
-            productFilter=new ProductFilter();
+        if (filter == null && colorIds != null && !colorIds.equals("")) {
+            productFilter = new ProductFilter();
             productFilter.setColorId(colorIds);
-        }else if (filter!=null&&colorIds!=null&&!colorIds.equals("")){
+        } else if (filter != null && colorIds != null && !colorIds.equals("")) {
             productFilter.setColorId(colorIds);
         }
 //        return ResponseEntity.ok(productFilter);
@@ -75,10 +75,10 @@ public class ProductController {
             @RequestParam(required = false) String colors,
             @RequestParam(required = false, name = "photos") MultipartFile[] photos
     ) {
-        String[] split = colors.split(",");
-        Integer[] colorIds=new Integer[split.length];
+        String[] split = colors != null && !colors.equals("") ? colors.split(",") : new String[0];
+        Integer[] colorIds = new Integer[split.length];
         for (int i = 0; i < split.length; i++) {
-            colorIds[i]=Integer.valueOf(split[i]);
+            colorIds[i] = Integer.valueOf(split[i]);
         }
         ProductRequest productRequest = new ProductRequest(
                 name,
@@ -119,10 +119,10 @@ public class ProductController {
             @RequestParam(required = false, name = "photos") MultipartFile[] photos,
             @RequestParam(required = false) String oldPhotos
     ) {
-        String[] split = colors.split(",");
-        Integer[] colorIds=new Integer[split.length];
+        String[] split = colors != null && !colors.equals("") ? colors.split(",") : new String[0];
+        Integer[] colorIds = new Integer[split.length];
         for (int i = 0; i < split.length; i++) {
-            colorIds[i]=Integer.valueOf(split[i]);
+            colorIds[i] = Integer.valueOf(split[i]);
         }
         ProductRequest productRequest = new ProductRequest(
                 name,
@@ -140,7 +140,7 @@ public class ProductController {
                 price,
                 salePrice
         );
-        return productService.edit(UUID.fromString(id), productRequest,oldPhotos);
+        return productService.edit(UUID.fromString(id), productRequest, oldPhotos);
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
@@ -163,18 +163,18 @@ public class ProductController {
     }
 
     @GetMapping("/get-features/{id}")
-    public HttpEntity<?> getFeatures(@PathVariable String id){
+    public HttpEntity<?> getFeatures(@PathVariable String id) {
         return productService.getFeatures(UUID.fromString(id));
     }
 
     @GetMapping("/features/{id}")
-    public HttpEntity<?> getOneFeature(@PathVariable String id){
+    public HttpEntity<?> getOneFeature(@PathVariable String id) {
         return productService.getOneFeature(UUID.fromString(id));
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     @DeleteMapping("/features/{id}")
-    public HttpEntity<?> deleteFeature(@PathVariable String id){
+    public HttpEntity<?> deleteFeature(@PathVariable String id) {
         return productService.deleteFeature(UUID.fromString(id));
     }
 }

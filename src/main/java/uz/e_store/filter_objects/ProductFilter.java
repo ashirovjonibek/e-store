@@ -24,7 +24,9 @@ public class ProductFilter {
 
     private String search;
 
-    private String salePriceIn;
+    private String saleFrom;
+
+    private String saleTo;
 
     private String colorId;
 }

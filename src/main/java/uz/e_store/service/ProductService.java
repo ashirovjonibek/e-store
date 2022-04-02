@@ -238,8 +238,7 @@ public class ProductService {
         if (filter != null) {
             String categoryId = filter.getCategoryId(), colorIds = filter.getColorId(), sizeId = filter.getSizeId(), brandId = filter.getBrandId(), genderId = filter.getGenderId(), seasonId = filter.getSeasonId();
             String discountId = filter.getDiscountId();
-            String[] sales = filter.getSalePriceIn() != null ? filter.getSalePriceIn().split("~") : null;
-            Float saleFrom = sales != null ? Float.valueOf(sales[0]) : null, saleTo = sales != null ? Float.valueOf(sales[1]) : null;
+            Float saleFrom = filter.getSaleFrom() != null && !filter.getSaleFrom().equals("") ? Float.valueOf(filter.getSaleFrom()) : null, saleTo = filter.getSaleTo() != null && !filter.getSaleTo().equals("") ? Float.valueOf(filter.getSaleTo()) : null;
             String search = filter.getSearch();
             if (categoryId != null && !categoryId.equals("")) {
                 stringBuffer.append(" where category_id in (" + categoryId + ")");
@@ -290,17 +289,39 @@ public class ProductService {
                     stringBuffer.append(" and discount_id in (" + discountId + ")");
                 }
             }
-            if (saleFrom != null) {
+            if (saleFrom != null || saleTo != null) {
                 if (
                         (categoryId == null || categoryId.equals(""))
                                 && (sizeId == null || sizeId.equals(""))
                                 && (brandId == null || brandId.equals(""))
                                 && (genderId == null || genderId.equals(""))
                                 && (seasonId == null || seasonId.equals(""))
-                                && (discountId == null || discountId.equals(""))) {
-                    stringBuffer.append(" where sale_price between " + saleFrom + " and " + saleTo);
+                                && (discountId == null || discountId.equals("")) && saleTo == null && saleFrom != null) {
+                    stringBuffer.append(" where sale_price >=" + saleFrom);
+                } else if (
+                        (categoryId == null || categoryId.equals(""))
+                                && (sizeId == null || sizeId.equals(""))
+                                && (brandId == null || brandId.equals(""))
+                                && (genderId == null || genderId.equals(""))
+                                && (seasonId == null || seasonId.equals(""))
+                                && (discountId == null || discountId.equals("")) && saleFrom == null && saleTo != null) {
+                    stringBuffer.append(" where sale_price <= " + saleTo);
+                } else if (
+                        (categoryId == null || categoryId.equals(""))
+                                && (sizeId == null || sizeId.equals(""))
+                                && (brandId == null || brandId.equals(""))
+                                && (genderId == null || genderId.equals(""))
+                                && (seasonId == null || seasonId.equals(""))
+                                && (discountId == null || discountId.equals("")) && saleFrom != null && saleTo != null) {
+                    stringBuffer.append(" where sale_price >= " + saleFrom + " and sale_price <= " + saleTo);
                 } else {
-                    stringBuffer.append(" and sale_price between " + saleFrom + " and " + saleTo);
+                    if (saleFrom == null && saleTo != null) {
+                        stringBuffer.append(" and sale_price <= " + saleTo);
+                    } else if (saleFrom != null && saleTo == null) {
+                        stringBuffer.append(" and sale_price >= " + saleFrom);
+                    } else {
+                        stringBuffer.append(" and sale_price >= " + saleFrom + " and sale_price <= " + saleTo);
+                    }
                 }
             }
             if (search != null && !search.equals("")) {
