@@ -80,7 +80,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         "/api/error/**",
                         "/api/order/**",
                         "/api/color/**",
-                        "/api/photo/**"
+                        "/api/photo/**",
+                        "/api/blog/**"
                 )
                 .permitAll()
                 .antMatchers("/api/**")
