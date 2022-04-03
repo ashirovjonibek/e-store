@@ -25,6 +25,7 @@ public class BlogRequest {
         blog.setActive(blogRequest.getActive()==1);
         blog.setDescription(blogRequest.getDescription());
         blog.setTitle(blogRequest.getTitle());
+        blog.setName("--");
         return blog;
     }
 }

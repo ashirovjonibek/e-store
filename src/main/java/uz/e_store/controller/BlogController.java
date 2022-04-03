@@ -2,6 +2,7 @@ package uz.e_store.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import uz.e_store.dtos.request.BlogRequest;
@@ -29,6 +30,7 @@ public class BlogController {
         return blogService.findById(id,expand);
     }
 
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     @PostMapping
     public HttpEntity<?> save(
             @RequestParam(required = false) String title,
@@ -40,6 +42,7 @@ public class BlogController {
         return blogService.save(blogRequest);
     }
 
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     @PutMapping("/{id}")
     public HttpEntity<?> edit(
             @PathVariable Integer id,
@@ -50,5 +53,11 @@ public class BlogController {
     ){
         BlogRequest blogRequest=new BlogRequest(description,active,title,photo);
         return blogService.edit(id,blogRequest);
+    }
+
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
+    @DeleteMapping("/{id}")
+    public HttpEntity<?> delete(@PathVariable Integer id){
+        return blogService.delete(id);
     }
 }

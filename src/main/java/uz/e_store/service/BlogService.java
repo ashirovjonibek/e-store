@@ -91,39 +91,42 @@ public class BlogService {
 
     public ResponseEntity<?> edit(Integer id, BlogRequest blogRequest) {
         Map<String, Object> validate = BlogValidator.validate(blogRequest, false);
-        if (validate.size() == 0) {
-            try {
-                Blog request = BlogRequest.request(blogRequest);
-                if (blogRequest.getPhoto() != null) {
-                    List<MultipartFile> files = new ArrayList<>();
-                    files.add(blogRequest.getPhoto());
-                    List<Attachment> attachments = attachmentService.uploadFile(files);
-                    if (attachments.size() > 0) {
-                        request.setPhoto(attachments.get(0));
+        Optional<Blog> blog = blogRepository.findByIdAndDeleteFalse(id);
+        if (blog.isPresent()){
+            if (validate.size() == 0) {
+                try {
+                    Blog request = BlogRequest.request(blogRequest);
+                    if (blogRequest.getPhoto() != null) {
+                        List<MultipartFile> files = new ArrayList<>();
+                        files.add(blogRequest.getPhoto());
+                        List<Attachment> attachments = attachmentService.uploadFile(files);
+                        if (attachments.size() > 0) {
+                            request.setPhoto(attachments.get(0));
+                        }
                     }
+                    request.setId(id);
+                    blogRepository.save(request);
+                    return ResponseEntity.ok(new ApiResponse((short) 1, "Successfully updated blog!", null));
+                } catch (Exception e) {
+                    return ResponseEntity.status(500).body(new ApiResponse((short) 0, "Error updated blog try again!", null));
                 }
-                request.setId(id);
-                blogRepository.save(request);
-                return ResponseEntity.ok(new ApiResponse((short) 1, "Successfully updated blog!", null));
-            } catch (Exception e) {
-                return ResponseEntity.status(500).body(new ApiResponse((short) 0, "Error updated blog try again!", null));
-            }
-        } else return ResponseEntity.status(422).body(new ApiResponse(0, "Validator errors", validate));
+            } else return ResponseEntity.status(422).body(new ApiResponse(0, "Validator errors", validate));
+        }else return ResponseEntity.status(404).body(new ApiResponse(0,"Blog not found with id",null));
     }
 
-    public ApiResponse delete(Integer id) {
+    public ResponseEntity delete(Integer id) {
         try {
             Optional<Blog> byId = blogRepository.findByIdAndDeleteFalse(id);
             if (byId.isPresent()) {
                 Blog blog = byId.get();
                 blog.setDelete(true);
                 blogRepository.save(blog);
-                return new ApiResponse(1, "Blog deleted successfully!", null);
+                return ResponseEntity.ok(new ApiResponse(1, "Blog deleted successfully!", null));
             } else {
-                return new ApiResponse(0, "Blog not fount!", null);
+                return ResponseEntity.status(404).body(new ApiResponse(0, "Blog not fount!", null));
             }
         } catch (Exception e) {
-            return new ApiResponse(0, "Error delete blog!", null);
+            return ResponseEntity.status(500).body(new ApiResponse(0, "Error delete blog!", null));
         }
     }
 
