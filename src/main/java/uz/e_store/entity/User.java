@@ -27,6 +27,9 @@ public class User extends AbsEntity implements UserDetails {
     @Column(unique = true)
     private String username;
 
+    @Column(unique = true)
+    private String email;
+
     private String password;
 
     @ManyToMany(fetch = FetchType.EAGER)
@@ -53,6 +56,13 @@ public class User extends AbsEntity implements UserDetails {
         this.username = username;
         this.password = password;
         this.roles = roles;
+    }
+
+    public User(String firstName, String lastName, String phoneNumber, String email) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.phoneNumber = phoneNumber;
+        this.email = email;
     }
 
     @Override

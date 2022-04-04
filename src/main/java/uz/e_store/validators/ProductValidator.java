@@ -55,13 +55,17 @@ public class ProductValidator {
         } else {
             Set<String> err = new HashSet<>();
             List<MultipartFile> photos = Arrays.asList(productRequest.getPhotos());
-            photos.stream().forEach(photo -> {
-                if (!photo.getContentType().toLowerCase().startsWith("image")) {
-                    err.add("File type required image");
-                } else if (photo.getSize() > AppConstants.FILE_SIZE) {
-                    err.add("File size not more then " + AppConstants.FILE_SIZE / 1024 + " Kb");
-                }
-            });
+            if (productRequest.getPhotos().length==AppConstants.IMAGE_COUNT){
+                photos.stream().forEach(photo -> {
+                    if (!photo.getContentType().toLowerCase().startsWith("image")) {
+                        err.add("File type required image");
+                    } else if (photo.getSize() > AppConstants.FILE_SIZE) {
+                        err.add("File size not more then " + AppConstants.FILE_SIZE / 1024 + " Kb");
+                    }
+                });
+            }else {
+                err.add("The number of pictures should not exceed "+AppConstants.IMAGE_COUNT);
+            }
             if (err.size() > 0) {
                 errors.put("photos", err);
             }

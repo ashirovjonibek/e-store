@@ -114,7 +114,7 @@ public class BlogService {
         }else return ResponseEntity.status(404).body(new ApiResponse(0,"Blog not found with id",null));
     }
 
-    public ResponseEntity delete(Integer id) {
+    public ResponseEntity<?> delete(Integer id) {
         try {
             Optional<Blog> byId = blogRepository.findByIdAndDeleteFalse(id);
             if (byId.isPresent()) {

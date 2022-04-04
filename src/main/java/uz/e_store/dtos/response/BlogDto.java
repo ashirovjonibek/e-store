@@ -25,7 +25,7 @@ public class BlogDto extends AbsDtoNameTemplate {
         blogDto.setCreatedAt(blog.getCreatedAt());
         blogDto.setUpdatedAt(blog.getUpdatedAt());
         blogDto.setId(blog.getId());
-        blogDto.setActive(blog.isActive()?1:0);
+        blogDto.setActive(blog.isActive() ? 1 : 0);
         blogDto.setDescription(blog.getDescription());
         blogDto.setTitle(blog.getTitle());
         if (expand != null) {
@@ -35,12 +35,9 @@ public class BlogDto extends AbsDtoNameTemplate {
             if (expand.contains("updatedBy") && blog.getUpdatedBy() != null) {
                 blogDto.setUpdatedBy(CreatedByUpdatedByDto.response(blog.getUpdatedBy()));
             }
-            if (expand.contains("createdBy") && blog.getCreatedBy() != null) {
-                blogDto.setCreatedBy(CreatedByUpdatedByDto.response(blog.getCreatedBy()));
-            }
-            if (blog.getPhoto() != null) {
-                blogDto.setPhoto(blog.getPhoto().getId());
-            }
+        }
+        if (blog.getPhoto() != null) {
+            blogDto.setPhoto(blog.getPhoto().getId());
         }
         return blogDto;
     }
