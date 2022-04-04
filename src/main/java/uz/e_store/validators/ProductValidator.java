@@ -55,7 +55,7 @@ public class ProductValidator {
         } else {
             Set<String> err = new HashSet<>();
             List<MultipartFile> photos = Arrays.asList(productRequest.getPhotos());
-            if (productRequest.getPhotos().length==AppConstants.IMAGE_COUNT){
+            if (productRequest.getPhotos().length<=AppConstants.IMAGE_COUNT){
                 photos.stream().forEach(photo -> {
                     if (!photo.getContentType().toLowerCase().startsWith("image")) {
                         err.add("File type required image");
