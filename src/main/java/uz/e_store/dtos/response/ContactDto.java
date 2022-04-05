@@ -28,6 +28,7 @@ public class ContactDto extends AbsDtoNameTemplate {
         contactDto.setId(contact.getId());
         contactDto.setActive(contact.isActive() ? 1 : 0);
         contactDto.setConfirm(contact.getConfirm());
+        contactDto.setDescription(contact.getDescription());
         if (expand != null) {
             if (expand.contains("createdBy") && contact.getCreatedBy() != null) {
                 contactDto.setCreatedBy(CreatedByUpdatedByDto.response(contact.getCreatedBy()));
