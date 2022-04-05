@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import uz.e_store.dtos.request.BrandFeatureRequest;
 import uz.e_store.dtos.request.BrandRequest;
 import uz.e_store.dtos.request.DiscountRequest;
 import uz.e_store.entity.Brand;
@@ -31,10 +32,10 @@ public class BrandController {
     public HttpEntity<?> getAllBrand(
             @RequestParam(defaultValue = "", required = false) String expand,
             @RequestParam(required = false) String order,
-            @RequestParam(required = false,defaultValue = "1") int page,
-            @RequestParam(required = false,defaultValue = "20") int size
+            @RequestParam(required = false, defaultValue = "1") int page,
+            @RequestParam(required = false, defaultValue = "20") int size
     ) {
-        return ResponseEntity.ok(brandService.findAll(page,size,expand,order));
+        return ResponseEntity.ok(brandService.findAll(page, size, expand, order));
     }
 
     @GetMapping("/{id}")
@@ -42,13 +43,13 @@ public class BrandController {
             @PathVariable Integer id,
             @RequestParam(defaultValue = "", required = false) String expand
     ) {
-        return ResponseEntity.ok(brandService.findById(id,expand));
+        return ResponseEntity.ok(brandService.findById(id, expand));
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     @PostMapping
     public HttpEntity<?> saveBrand(@RequestBody BrandRequest brandRequest) {
-        Map<String, Object> validate = BrandValidator.validate(brandRequest,brandService.checkName(brandRequest.getBrandName()));
+        Map<String, Object> validate = BrandValidator.validate(brandRequest, brandService.checkName(brandRequest.getBrandName()));
         if (validate.size() == 0) {
             return ResponseEntity.ok(brandService.save(BrandRequest.request(brandRequest)));
         } else {
@@ -61,8 +62,8 @@ public class BrandController {
     public HttpEntity<?> editBrand(@PathVariable Integer id, @RequestBody BrandRequest brandRequest) {
         Map<String, Object> validate = BrandValidator.validate(
                 brandRequest,
-                brandService.checkName(brandRequest.getBrandName())&&
-                        !brandService.checkName(brandRequest.getBrandName(),id)
+                brandService.checkName(brandRequest.getBrandName()) &&
+                        !brandService.checkName(brandRequest.getBrandName(), id)
 
         );
         if (validate.size() == 0) {
@@ -75,6 +76,34 @@ public class BrandController {
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     @DeleteMapping
     public HttpEntity<?> deleteBrand(@RequestParam Integer id) {
-            return ResponseEntity.ok(brandService.delete(id));
+        return ResponseEntity.ok(brandService.delete(id));
+    }
+
+    @GetMapping("/feature/{brandId}")
+    public HttpEntity<?> getAllFeatureWithBrandId(@PathVariable Integer brandId) {
+        return brandService.getAllBrandFeatures(brandId);
+    }
+
+    @GetMapping("/feature-one/{id}")
+    public HttpEntity<?> getOneFeatureWithId(@PathVariable Integer id) {
+        return brandService.getOneBrandFeature(id);
+    }
+
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
+    @PostMapping("feature")
+    public HttpEntity<?> saveFeature(@RequestBody BrandFeatureRequest featureRequest) {
+        return brandService.saveBrandFeature(featureRequest);
+    }
+
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
+    @PutMapping("feature/{id}")
+    public HttpEntity<?> editFeature(@PathVariable Integer id, @RequestBody BrandFeatureRequest featureRequest) {
+        return brandService.editBrandFeature(id, featureRequest);
+    }
+
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
+    @DeleteMapping("feature/{id}")
+    public HttpEntity<?> deleteFeature(@PathVariable Integer id) {
+        return brandService.deleteBrandFeature(id);
     }
 }

@@ -117,25 +117,36 @@ public class ProductService {
                     product.setId(product1.get().getId());
                     if (productRequest.getPhotos() != null) {
                         List<Attachment> attachments = attachmentService.uploadFile(Arrays.asList(productRequest.getPhotos()));
+                        if (oldPhotos != null && !oldPhotos.equals("")) {
+                            product1.get().getAttachments().forEach(attachment -> {
+                                if (oldPhotos.contains(attachment.getId().toString())) {
+                                    attachments.add(attachment);
+                                } else {
+                                    attachmentService.deleteAttachment(attachment.getId());
+                                }
+                            });
+                        }
                         product.setAttachments(attachments);
                     } else {
                         if (product.getAttachments() == null) {
-                            product.setAttachments(product1.get().getAttachments());
+                            List<Attachment> attachments = new ArrayList<>();
+                            if (oldPhotos != null && !oldPhotos.equals("")) {
+                                product1.get().getAttachments().forEach(attachment -> {
+                                    if (oldPhotos.contains(attachment.getId().toString())) {
+                                        attachments.add(attachment);
+                                    } else {
+                                        attachmentService.deleteAttachment(attachment.getId());
+                                    }
+                                });
+                            }
+                            product.setAttachments(attachments);
                         }
                     }
-                    List<Attachment> attachments = product.getAttachments();
-                    if (oldPhotos != null && !oldPhotos.equals("")) {
-                        product1.get().getAttachments().forEach(attachment -> {
-                            if (oldPhotos.contains(attachment.getId().toString())) {
-                                attachments.add(attachment);
-                            }
-                        });
-                    }
-                    product.setAttachments(attachments);
                     productRepository.save(product);
                     return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse(1, "Product updated successfully", null));
                 }
             } catch (Exception e) {
+                e.printStackTrace();
                 return ResponseEntity.status(500).body(new ApiResponse(0, "Error update product", null));
             }
         } else {
@@ -181,9 +192,9 @@ public class ProductService {
                 validate.put("categoryId", err);
             }
         }
-        if (productRequest.getSizeId() != null&&productRequest.getSizeId().size()>0) {
+        if (productRequest.getSizeId() != null && productRequest.getSizeId().size() > 0) {
             List<Size> size = sizeRepository.findAllById(productRequest.getSizeId());
-            if (size.size()==productRequest.getSizeId().size()) {
+            if (size.size() == productRequest.getSizeId().size()) {
                 product.setSizes(size);
             } else {
                 List<String> err = new ArrayList<>();

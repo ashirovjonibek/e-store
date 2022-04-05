@@ -3,21 +3,20 @@ package uz.e_store.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileUrlResource;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
 import uz.e_store.entity.Attachment;
 import uz.e_store.entity.AttachmentContent;
+import uz.e_store.entity.Error;
 import uz.e_store.repository.AttachmentContentRepository;
 import uz.e_store.repository.AttachmentRepository;
+import uz.e_store.repository.ErrorRepository;
 
 import java.io.File;
 import java.io.IOException;
-import java.sql.Timestamp;
 import java.util.*;
 
 @Service
@@ -27,6 +26,9 @@ public class AttachmentService {
 
     @Autowired
     AttachmentContentRepository attachmentContentRepository;
+
+    @Autowired
+    ErrorRepository errorRepository;
 
     @Value("${file.saved.url}")
     private String uploadFolder;
@@ -109,6 +111,26 @@ public class AttachmentService {
             throw new IllegalArgumentException("Data not found with photo id!");
         }
 
+    }
+
+    public void deleteAttachment(UUID id){
+        try {
+            Optional<Attachment> byId = attachmentRepository.findById(id);
+            if (byId.isPresent()){
+                Optional<AttachmentContent> attachmentContent = attachmentContentRepository.findByAttachmentId(byId.get().getId());
+                if (attachmentContent.isPresent()){
+                    attachmentRepository.delete(byId.get());
+                    attachmentContentRepository.delete(attachmentContent.get());
+                }else {
+                    errorRepository.save(new Error("attachmentContent","Content not found"));
+                }
+            }else {
+                errorRepository.save(new Error("attachment","Attachment not found"));
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+            errorRepository.save(new Error("attachments",e.getLocalizedMessage()));
+        }
     }
 
     private String getExt(String fileName) {
