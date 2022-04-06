@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 import uz.e_store.dtos.template.AbsDtoNameTemplate;
 import uz.e_store.entity.Brand;
 
+import java.util.UUID;
+
 @EqualsAndHashCode(callSuper = true)
 @Data
 @AllArgsConstructor
@@ -16,6 +18,8 @@ public class BrandDto extends AbsDtoNameTemplate {
     private String name;
 
     private String brnadName;
+
+    private UUID photoId;
 
     public static BrandDto response(Brand brand, String expand) {
         BrandDto brandDto = new BrandDto();
@@ -33,6 +37,9 @@ public class BrandDto extends AbsDtoNameTemplate {
             if (expand.contains("updatedBy") && brand.getUpdatedBy() != null) {
                 brandDto.setUpdatedBy(CreatedByUpdatedByDto.response(brand.getUpdatedBy()));
             }
+        }
+        if (brand.getPhoto() != null) {
+            brandDto.setPhotoId(brand.getPhoto().getId());
         }
         return brandDto;
     }

@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import uz.e_store.dtos.request.BrandFeatureRequest;
 import uz.e_store.dtos.request.BrandRequest;
 import uz.e_store.dtos.request.DiscountRequest;
@@ -48,10 +49,17 @@ public class BrandController {
 
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     @PostMapping
-    public HttpEntity<?> saveBrand(@RequestBody BrandRequest brandRequest) {
+    public HttpEntity<?> saveBrand(
+            @RequestParam(required = false) String description,
+            @RequestParam(required = false) boolean active,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String brandName,
+            @RequestParam(required = false) MultipartFile photo
+    ) {
+        BrandRequest brandRequest=new BrandRequest(description,active,name,brandName,photo);
         Map<String, Object> validate = BrandValidator.validate(brandRequest, brandService.checkName(brandRequest.getBrandName()));
         if (validate.size() == 0) {
-            return ResponseEntity.ok(brandService.save(BrandRequest.request(brandRequest)));
+            return ResponseEntity.ok(brandService.save(brandRequest));
         } else {
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(new ErrorResponse(0, "Validator errors!", validate));
         }
@@ -59,7 +67,15 @@ public class BrandController {
 
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     @PutMapping("/{id}")
-    public HttpEntity<?> editBrand(@PathVariable Integer id, @RequestBody BrandRequest brandRequest) {
+    public HttpEntity<?> editBrand(
+            @PathVariable Integer id,
+            @RequestParam(required = false) String description,
+            @RequestParam(required = false) boolean active,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String brandName,
+            @RequestParam(required = false) MultipartFile photo
+    ) {
+        BrandRequest brandRequest=new BrandRequest(description,active,name,brandName,photo);
         Map<String, Object> validate = BrandValidator.validate(
                 brandRequest,
                 brandService.checkName(brandRequest.getBrandName()) &&

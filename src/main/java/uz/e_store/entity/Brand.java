@@ -7,6 +7,8 @@ import uz.e_store.entity.template.AbsNameEntity;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.OneToOne;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -14,4 +16,7 @@ import javax.persistence.Entity;
 public class Brand extends AbsNameEntity {
     @Column(unique = true)
     private String brandName;
+
+    @OneToOne
+    private Attachment photo;
 }

@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import uz.e_store.dtos.request.BrandFeatureRequest;
 import uz.e_store.dtos.request.BrandRequest;
 import uz.e_store.dtos.request.DiscountRequest;
@@ -14,6 +15,7 @@ import uz.e_store.dtos.response.BrandDto;
 import uz.e_store.dtos.response.BrandFeatureDto;
 import uz.e_store.dtos.response.DiscountDto;
 import uz.e_store.dtos.response.Meta;
+import uz.e_store.entity.Attachment;
 import uz.e_store.entity.Brand;
 import uz.e_store.entity.BrandFeature;
 import uz.e_store.entity.Discount;
@@ -25,10 +27,7 @@ import uz.e_store.repository.DiscountRepository;
 import uz.e_store.utils.CommonUtils;
 import uz.e_store.validators.BrandFeatureValidator;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,6 +37,9 @@ public class BrandService {
 
     @Autowired
     BrandFeatureRepository brandFeatureRepository;
+
+    @Autowired
+    AttachmentService attachmentService;
 
     public ApiResponse findAll(int page, int size, String expand, String order) {
         String[] split = order != null ? order.split("~") : new String[0];
@@ -75,8 +77,15 @@ public class BrandService {
         }
     }
 
-    public ApiResponse save(Brand brand) {
+    public ApiResponse save(BrandRequest brandRequest) {
+        Brand brand = BrandRequest.request(brandRequest);
         try {
+            if (brandRequest.getPhoto() != null) {
+                List<MultipartFile> files = new ArrayList<>();
+                files.add(brandRequest.getPhoto());
+                List<Attachment> attachments = attachmentService.uploadFile(files);
+                brand.setPhoto(attachments.get(0));
+            }
             brandRepository.save(brand);
             return new ApiResponse((short) 1, "Successfully saved brand!", null);
         } catch (Exception e) {
@@ -85,15 +94,26 @@ public class BrandService {
     }
 
     public ApiResponse edit(Integer id, BrandRequest brandRequest) {
-        Brand brand = BrandRequest.request(brandRequest);
-        brand.setId(id);
-        try {
-            brandRepository.save(brand);
-            return new ApiResponse((short) 1, "Brand successfully updated!", null);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new ApiResponse((short) 0, "Error update brand", null);
-        }
+        Optional<Brand> brandOptional = brandRepository.findByIdAndDeleteFalse(id);
+        if (brandOptional.isPresent()) {
+            Brand brand = BrandRequest.request(brandRequest);
+            brand.setId(id);
+            try {
+                if (brandRequest.getPhoto() != null) {
+                    List<MultipartFile> files = new ArrayList<>();
+                    files.add(brandRequest.getPhoto());
+                    List<Attachment> attachments = attachmentService.uploadFile(files);
+                    brand.setPhoto(attachments.get(0));
+                }else {
+                    brand.setPhoto(brandOptional.get().getPhoto());
+                }
+                brandRepository.save(brand);
+                return new ApiResponse((short) 1, "Brand successfully updated!", null);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return new ApiResponse((short) 0, "Error update brand", null);
+            }
+        }else return new ApiResponse((short) 0, "Brand not found with id", null);
     }
 
     public ApiResponse delete(Integer id) {
@@ -160,11 +180,11 @@ public class BrandService {
             Optional<BrandFeature> brandFeature = brandFeatureRepository.findById(id);
             if (brandFeature.isPresent()) {
                 try {
-                    BrandFeature brandFeature1=BrandFeatureRequest.request(request);
-                    if (request.getBrandId()!=null){
+                    BrandFeature brandFeature1 = BrandFeatureRequest.request(request);
+                    if (request.getBrandId() != null) {
                         Optional<Brand> brand = brandRepository.findByIdAndDeleteFalse(request.getBrandId());
                         brand.ifPresent(brandFeature1::setBrand);
-                    }else brandFeature1.setBrand(brandFeature.get().getBrand());
+                    } else brandFeature1.setBrand(brandFeature.get().getBrand());
                     brandFeature1.setId(id);
                     brandFeatureRepository.save(brandFeature1);
                     return ResponseEntity.ok(new ApiResponse(1, "Successfully updated feature!", null));
@@ -179,17 +199,17 @@ public class BrandService {
         }
     }
 
-    public ResponseEntity<?> deleteBrandFeature(Integer id){
-        try{
+    public ResponseEntity<?> deleteBrandFeature(Integer id) {
+        try {
             Optional<BrandFeature> byId = brandFeatureRepository.findById(id);
-            if (byId.isPresent()){
+            if (byId.isPresent()) {
                 brandFeatureRepository.delete(byId.get());
-                return ResponseEntity.ok(new ApiResponse(1,"Successfully deleted brand feature",null));
-            }else {
-                return ResponseEntity.status(404).body(new ApiResponse(0,"Feature not found with id",null));
+                return ResponseEntity.ok(new ApiResponse(1, "Successfully deleted brand feature", null));
+            } else {
+                return ResponseEntity.status(404).body(new ApiResponse(0, "Feature not found with id", null));
             }
-        }catch (Exception e){
-            return ResponseEntity.status(500).body(new ApiResponse(0,"Error delete brand feature",null));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(new ApiResponse(0, "Error delete brand feature", null));
         }
     }
 
