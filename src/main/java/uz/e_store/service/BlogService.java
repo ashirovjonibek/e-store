@@ -103,6 +103,8 @@ public class BlogService {
                         if (attachments.size() > 0) {
                             request.setPhoto(attachments.get(0));
                         }
+                    }else{
+                        request.setPhoto(blog.get().getPhoto());
                     }
                     request.setId(id);
                     blogRepository.save(request);
