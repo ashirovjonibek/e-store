@@ -1,6 +1,8 @@
 {
   "short_name": "React App",
   "name": "Online shop",
+  "description": "Bu online kiyim dokon",
+  "start_url": "/index.html",
   "icons": [
     {
       "src": "favicon.ico",
@@ -18,8 +20,8 @@
       "sizes": "512x512"
     }
   ],
-  "start_url": ".",
   "display": "standalone",
   "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "background_color": "#000000",
+  "orientation": "portrait-primary"
 }
