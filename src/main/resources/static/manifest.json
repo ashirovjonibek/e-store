@@ -2,7 +2,7 @@
   "short_name": "React App",
   "name": "Online shop",
   "description": "Bu online kiyim dokon",
-  "start_url": "/index.html",
+  "start_url": "/",
   "icons": [
     {
       "src": "favicon.ico",
